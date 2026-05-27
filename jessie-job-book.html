@@ -227,7 +227,9 @@
     <div class="stat-grid">
       <div class="stat"><span class="lbl">Customers</span><span class="val" id="sCount">0</span></div>
       <div class="stat"><span class="lbl">大费 total</span><span class="val" id="sFee">$0</span></div>
+      <div class="stat"><span class="lbl">Deposit total</span><span class="val" id="sDep">$0</span></div>
       <div class="stat"><span class="lbl">Tips total</span><span class="val" id="sTip">$0</span></div>
+      <div class="stat"><span class="lbl">Commission base</span><span class="val" id="sBase">$0</span></div>
       <div class="stat"><span class="lbl">Commission</span><span class="val" id="sComm">$0</span></div>
       <div class="stat"><span class="lbl">30% rows</span><span class="val" id="sCount30">0</span></div>
       <div class="stat"><span class="lbl">40% rows</span><span class="val" id="sCount40">0</span></div>
@@ -255,6 +257,7 @@
       <div class="stat"><span class="lbl">Days worked</span><span class="val" id="wDays">0</span></div>
       <div class="stat"><span class="lbl">Customers</span><span class="val" id="wCount">0</span></div>
       <div class="stat"><span class="lbl">大费 total</span><span class="val" id="wFee">$0</span></div>
+      <div class="stat"><span class="lbl">Deposit total</span><span class="val" id="wDep">$0</span></div>
       <div class="stat"><span class="lbl">Tips total</span><span class="val" id="wTip">$0</span></div>
       <div class="stat"><span class="lbl">Commission</span><span class="val" id="wComm">$0</span></div>
       <div class="stat"><span class="lbl">40% rows</span><span class="val" id="wCount40">0</span></div>
@@ -279,6 +282,7 @@
       <div class="stat"><span class="lbl">Days worked</span><span class="val" id="mDays">0</span></div>
       <div class="stat"><span class="lbl">Customers</span><span class="val" id="mCount">0</span></div>
       <div class="stat"><span class="lbl">大费 total</span><span class="val" id="mFee">$0</span></div>
+      <div class="stat"><span class="lbl">Deposit total</span><span class="val" id="mDep">$0</span></div>
       <div class="stat"><span class="lbl">Tips total</span><span class="val" id="mTip">$0</span></div>
       <div class="stat"><span class="lbl">Commission</span><span class="val" id="mComm">$0</span></div>
       <div class="stat"><span class="lbl">40% rows</span><span class="val" id="mCount40">0</span></div>
@@ -505,10 +509,11 @@ function calcDay(day) {
     const f = num(r.fee), t = num(r.tip), d = num(r.deposit);
     fee += f; tip += t; dep += d;
     const ratePct = r.rate === 40 ? settings.rate40 : settings.rate30;
-    comm += f * (ratePct/100);
+    // Commission base = deposit + fee (deposit is upfront portion of the service price)
+    comm += (f + d) * (ratePct/100);
     if (r.rate === 40) c40++; else c30++;
   }
-  return { fee, tip, deposit: dep, commission: comm, takeHome: comm + tip, count, c30, c40 };
+  return { fee, tip, deposit: dep, base: fee+dep, commission: comm, takeHome: comm + tip, count, c30, c40 };
 }
 
 // ============================================================
@@ -644,6 +649,8 @@ function updateDaySummary() {
   const s = calcDay(day);
   document.getElementById('sCount').textContent = s.count;
   document.getElementById('sFee').textContent = $$(s.fee);
+  document.getElementById('sDep').textContent = $$(s.deposit);
+  document.getElementById('sBase').textContent = $$(s.base);
   document.getElementById('sTip').textContent = $$(s.tip);
   document.getElementById('sComm').textContent = $$(s.commission);
   document.getElementById('sCount30').textContent = s.c30;
@@ -759,50 +766,72 @@ async function extractFromPhoto(dataUrl, apiKey) {
   const mediaType = match[1];
   const base64Data = match[2];
 
-  const prompt = `You are reading a photo of a handwritten daily job sheet for a salon/spa worker named Jessie. The sheet has up to 10 numbered rows with these columns:
-- # (row number 1-10)
-- TIME (e.g. "11:30", "2:55", "6:20")
-- 客名 (customer name, often blank or short text/code)
-- depoit / Deposit (sometimes a number like 27 or 79, sometimes "Vip", often blank)
-- 大费 (the service fee, a dollar amount, the main column)
-- Tip (a tip amount)
+  const prompt = `You are reading a photo of a handwritten daily job sheet for a salon/spa worker named Jessie. ACCURACY ON NUMBERS IS CRITICAL — this is for her income and taxes.
 
-Symbols next to numbers indicate payment method and MUST BE IGNORED when extracting the numeric value:
-- V = Visa
-- Ⓩ (Z in a circle, may look like @) = Zelle
-- $ = cash
-- ✱ / * = check or generic mark
+LAYOUT
+The sheet has a printed header row "TIME | 客名 | depoit | 大费 | Tip" followed by up to 10 numbered rows (1-10).
 
-The sheet may also have:
-- A date written somewhere (e.g. at the top or in a corner). If found, format as YYYY-MM-DD.
-- A CIRCLED NUMBER at the bottom right — this is the total of the Tip column for that day (use it to verify your tip readings).
+COLUMNS
+- # — printed row number (1 through 10) at the far left
+- TIME — appointment time, e.g. "11:30", "2:55", "6:20"
+- 客名 — customer name; often blank, sometimes a short name like "mlisa" or a 3-digit code like "998"
+- depoit (deposit) — sometimes a number (27, 79), sometimes the word "Vip", often blank
+- 大费 — service fee, the main dollar column (typical values: 40, 55, 75, 85, 95, 108, 135)
+- Tip — tip amount (typical values: 6, 7, 10, 15, 17, 20, 22, 25, 27, 33)
 
-Rate detection rule:
-- Rows entered TOP-DOWN (1, 2, 3, ...) are at the 30% rate.
-- Rows entered BOTTOM-UP (e.g. row 10, 9, ...) are at the 40% rate.
-- You detect bottom-up rows by looking for a GAP of empty rows in the middle (e.g. rows 1-7 filled, rows 8-9 empty, row 10 filled → row 10 is 40%).
-- If the sheet is filled consecutively from row 1 with no gap, all rows are 30%.
+PAYMENT-METHOD SYMBOLS — ALWAYS STRIP THESE FROM NUMBERS
+Numbers in 大费 and Tip often have a payment symbol immediately to the right. NEVER include the symbol in the extracted value.
+- V (looks like a checkmark) = Visa → "135 V" extracts as 135
+- Ⓩ (Z inside a circle, may look like @ or ⓔ) = Zelle → "108 @" extracts as 108
+- $ = cash → "85 $" extracts as 85
+- ✱ or * = check/generic mark → "135 ✱" extracts as 135
+These symbols are ALWAYS to the RIGHT of the number, never part of it.
 
-Return ONLY a JSON object (no markdown, no commentary) with this exact shape:
+CIRCLED TIP TOTAL
+There is usually a CIRCLED NUMBER at the bottom-right of the sheet — this is the total of the Tip column. Use it as a SANITY CHECK:
+1. Extract all the tips.
+2. Add them up.
+3. Compare to the circled total.
+4. If they don't match, re-examine the Tip column carefully.
+
+DATE
+Sometimes a date is written at the top or in a corner. If found, normalize to YYYY-MM-DD. If not visible, return null.
+
+RATE DETECTION (30% vs 40%)
+- Rows filled top-down (1, 2, 3, ...) are 30%.
+- Rows filled bottom-up are 40% — you detect this by GAPS in the row sequence. Example: rows 1-7 have entries, rows 8-9 are EMPTY, row 10 has entries → row 10 is 40%, the rest are 30%.
+- If the sheet is filled consecutively from row 1 with no gaps, ALL rows are 30%.
+
+HANDWRITING — COMMON CONFUSIONS TO BE CAREFUL ABOUT
+- 1 vs 7: a 7 has a top horizontal stroke; a 1 usually doesn't.
+- 3 vs 8: an 8 has two closed loops; a 3 has open loops.
+- 5 vs 6: a 6 has a closed bottom loop; a 5 is open.
+- 0 vs 6 vs 9: look at where the loop closes.
+- 4 may be written open-top or closed-top.
+- Look at the WHOLE digit before deciding — and remember the typical value range for that column (above).
+
+OUTPUT
+Return ONLY a JSON object — no markdown, no code fences, no explanation:
 {
   "date": "YYYY-MM-DD" or null,
   "rows": [
     {"row": 1, "time": "11:30", "customer": "mlisa", "deposit": null, "fee": 135, "tip": 27, "rate": 30}
   ],
   "expected_tip_total": 142 or null,
-  "notes": "any uncertainty notes, short"
+  "notes": "uncertainty notes, e.g. 'row 3 fee unclear, could be 108 or 138'"
 }
 
-Rules:
-- Only include rows that have at least one filled value.
-- Strip all payment-method symbols from numbers — extract only the numeric value.
-- Use null for blank numeric fields, empty string "" for blank text fields.
+RULES
+- Only include rows that have at least one filled value. Skip blank rows.
+- Strip ALL payment symbols from numbers.
+- Use null for blank numeric fields, "" for blank text fields.
 - "rate" must be exactly 30 or 40.
+- If your tip sum doesn't match the circled total, re-read the tips.
 - Return the JSON only.`;
 
   const body = {
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 2000,
+    model: 'claude-sonnet-4-6',
+    max_tokens: 3000,
     messages: [{
       role: 'user',
       content: [
@@ -902,13 +931,13 @@ function renderWeek() {
 
   const list = document.getElementById('weekList');
   list.innerHTML = '';
-  let wFee=0, wTip=0, wComm=0, wTake=0, wCount=0, wDays=0, wC40=0;
+  let wFee=0, wDep=0, wTip=0, wComm=0, wTake=0, wCount=0, wDays=0, wC40=0;
   for (let i=0; i<7; i++) {
     const d = addDays(weekStart, i);
     const day = getDay(d);
     const s = calcDay(day);
     if (s.count > 0) wDays++;
-    wFee += s.fee; wTip += s.tip; wComm += s.commission; wTake += s.takeHome; wCount += s.count; wC40 += s.c40;
+    wFee += s.fee; wDep += s.deposit; wTip += s.tip; wComm += s.commission; wTake += s.takeHome; wCount += s.count; wC40 += s.c40;
     const li = document.createElement('li');
     li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
     li.innerHTML = `
@@ -925,6 +954,7 @@ function renderWeek() {
   document.getElementById('wDays').textContent = wDays;
   document.getElementById('wCount').textContent = wCount;
   document.getElementById('wFee').textContent = $$(wFee);
+  document.getElementById('wDep').textContent = $$(wDep);
   document.getElementById('wTip').textContent = $$(wTip);
   document.getElementById('wComm').textContent = $$(wComm);
   document.getElementById('wCount40').textContent = wC40;
@@ -943,14 +973,14 @@ function renderMonth() {
   const lastDay = new Date(y, m, 0).getDate();
   const list = document.getElementById('monthList');
   list.innerHTML = '';
-  let mFee=0, mTip=0, mComm=0, mTake=0, mCount=0, mDays=0, mC40=0;
+  let mFee=0, mDep=0, mTip=0, mComm=0, mTake=0, mCount=0, mDays=0, mC40=0;
   for (let i=1; i<=lastDay; i++) {
     const d = `${y}-${String(m).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
     const day = getDay(d);
     const s = calcDay(day);
     if (s.count > 0) {
       mDays++;
-      mFee += s.fee; mTip += s.tip; mComm += s.commission; mTake += s.takeHome; mCount += s.count; mC40 += s.c40;
+      mFee += s.fee; mDep += s.deposit; mTip += s.tip; mComm += s.commission; mTake += s.takeHome; mCount += s.count; mC40 += s.c40;
       const li = document.createElement('li');
       li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
       li.innerHTML = `
@@ -969,6 +999,7 @@ function renderMonth() {
   document.getElementById('mDays').textContent = mDays;
   document.getElementById('mCount').textContent = mCount;
   document.getElementById('mFee').textContent = $$(mFee);
+  document.getElementById('mDep').textContent = $$(mDep);
   document.getElementById('mTip').textContent = $$(mTip);
   document.getElementById('mComm').textContent = $$(mComm);
   document.getElementById('mCount40').textContent = mC40;

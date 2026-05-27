@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Job Book" />
+<meta name="theme-color" content="#be185d" />
+<title>Jessie's Job Book</title>
+
+<!-- Inline icon (no external requests needed) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23be185d'/><text x='90' y='128' font-size='110' text-anchor='middle' fill='white' font-family='-apple-system,sans-serif' font-weight='700'>J</text></svg>" />
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23be185d'/><text x='32' y='46' font-size='40' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'>J</text></svg>" />
+
+<style>
+  :root { color-scheme: light; --safe-top: env(safe-area-inset-top); --safe-bot: env(safe-area-inset-bottom); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #fdf2f8; color: #1f2937; }
+  body { max-width: 760px; margin: 0 auto; padding: calc(14px + var(--safe-top)) 14px calc(80px + var(--safe-bot)); }
+  h1 { font-size: 22px; margin: 0 0 4px; color: #9d174d; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: space-between; }
+  .gear { background: #fce7f3; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; }
+  .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+
+  .tabs { display: flex; gap: 6px; background: #fce7f3; padding: 4px; border-radius: 999px; margin-bottom: 14px; }
+  .tab { flex: 1; text-align: center; padding: 10px 0; border-radius: 999px; font-size: 14px; font-weight: 600; color: #9d174d; cursor: pointer; user-select: none; }
+  .tab.active { background: #be185d; color: #fff; box-shadow: 0 2px 6px rgba(190, 24, 93, 0.3); }
+
+  .card { background: #ffffff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 14px; }
+  .row-flex { display: flex; align-items: center; gap: 10px; }
+  .row-flex.between { justify-content: space-between; }
+  .nav-btn { background: #fce7f3; border: none; color: #9d174d; font-size: 18px; width: 44px; height: 44px; border-radius: 10px; cursor: pointer; font-weight: 700; }
+  .nav-btn:active { background: #fbcfe8; }
+
+  input[type="date"], input[type="month"] { padding: 11px 10px; border: 1px solid #f9a8d4; border-radius: 10px; font-size: 16px; background: #fff; color: #1f2937; flex: 1; min-height: 44px; }
+
+  /* Photo capture */
+  .photo-cta {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 28px 14px; border: 2px dashed #f9a8d4; border-radius: 14px; background: #fff7fb;
+    cursor: pointer; text-align: center; min-height: 130px;
+  }
+  .photo-cta:active { background: #fce7f3; }
+  .photo-cta .big { font-size: 17px; font-weight: 700; color: #9d174d; }
+  .photo-cta .small { font-size: 12px; color: #6b7280; }
+  .photo-cta svg { width: 36px; height: 36px; color: #be185d; }
+  input[type="file"] { display: none; }
+
+  /* Loading */
+  .loading { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px; }
+  .spinner { width: 36px; height: 36px; border: 3px solid #fce7f3; border-top-color: #be185d; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading .msg { font-size: 13px; color: #6b7280; }
+
+  /* Review table */
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; font-weight: 600; padding: 6px 4px; text-align: left; border-bottom: 2px solid #fbcfe8; }
+  td { padding: 4px 2px; border-bottom: 1px solid #fce7f3; vertical-align: middle; }
+  td input { width: 100%; padding: 9px 6px; border: 1px solid #e5e7eb; border-radius: 7px; font-size: 15px; background: #fff; color: #1f2937; min-width: 0; min-height: 38px; }
+  td input:focus { outline: none; border-color: #be185d; box-shadow: 0 0 0 2px rgba(190, 24, 93, 0.15); }
+  td input.num { text-align: right; }
+  .row-num { width: 22px; text-align: center; color: #9ca3af; font-weight: 600; font-size: 12px; }
+  .rate-toggle { display: inline-flex; border-radius: 7px; overflow: hidden; border: 1px solid #f9a8d4; }
+  .rate-toggle button { border: none; background: #fff; color: #9d174d; padding: 8px 8px; font-size: 11px; font-weight: 700; cursor: pointer; min-width: 38px; min-height: 38px; }
+  .rate-toggle button.active { background: #be185d; color: #fff; }
+  .col-time { width: 17%; } .col-cust { width: 21%; } .col-dep { width: 14%; } .col-fee { width: 17%; } .col-tip { width: 14%; } .col-rate { width: 14%; }
+
+  /* Summary */
+  .summary { background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 14px; padding: 14px; }
+  .summary h3 { margin: 0 0 10px; font-size: 14px; color: #9d174d; text-transform: uppercase; letter-spacing: 0.8px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  .stat { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+  .stat .lbl { color: #6b7280; }
+  .stat .val { color: #1f2937; font-weight: 600; }
+  .stat.big { grid-column: 1 / -1; border-top: 1px dashed #f9a8d4; padding-top: 10px; margin-top: 4px; }
+  .stat.big .lbl { font-size: 15px; color: #9d174d; font-weight: 700; }
+  .stat.big .val { font-size: 22px; color: #be185d; font-weight: 800; }
+
+  /* Day list (weekly/monthly) */
+  .day-list { list-style: none; padding: 0; margin: 0; }
+  .day-item { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; padding: 12px 4px; border-bottom: 1px solid #fce7f3; font-size: 14px; min-height: 44px; }
+  .day-item:last-child { border-bottom: none; }
+  .day-item .dow { color: #9ca3af; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .day-item .date { font-weight: 600; color: #1f2937; }
+  .day-item .mini { font-size: 11px; color: #6b7280; }
+  .day-item .num { font-weight: 700; color: #be185d; font-variant-numeric: tabular-nums; }
+  .day-item.today { background: #fff7fb; border-radius: 8px; }
+  .day-item.clickable { cursor: pointer; }
+  .day-item.clickable:active { background: #fce7f3; }
+  .empty { color: #9ca3af; font-size: 13px; text-align: center; padding: 18px 0; }
+
+  /* Buttons */
+  .toolbar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn { background: #be185d; color: #fff; border: none; padding: 12px 18px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; min-height: 44px; }
+  .btn.secondary { background: #fff; color: #9d174d; border: 1px solid #f9a8d4; }
+  .btn.danger { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .badge { display: inline-block; background: #fce7f3; color: #9d174d; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .legend { font-size: 11px; color: #6b7280; margin-top: 8px; line-height: 1.4; }
+
+  /* Photo preview thumbnail */
+  .thumb { display: block; max-width: 100%; max-height: 220px; border-radius: 10px; margin: 0 auto 10px; border: 1px solid #fce7f3; }
+
+  /* Notice */
+  .notice { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 10px 12px; border-radius: 10px; font-size: 13px; margin-bottom: 10px; }
+  .notice.err { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+  .notice.ok { background: #dcfce7; border-color: #bbf7d0; color: #166534; }
+
+  .save-status { font-size: 11px; color: #16a34a; font-style: italic; opacity: 0; transition: opacity 0.3s; }
+  .save-status.show { opacity: 1; }
+
+  /* Settings modal */
+  .modal-bg { position: fixed; inset: 0; background: rgba(31,41,55,0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; border-radius: 16px; padding: 20px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { margin: 0 0 8px; color: #9d174d; font-size: 18px; }
+  .modal label { display: block; margin-top: 12px; font-size: 13px; color: #6b7280; font-weight: 600; }
+  .modal input[type="text"], .modal input[type="password"], .modal input[type="number"] {
+    width: 100%; padding: 12px; border: 1px solid #f9a8d4; border-radius: 10px; font-size: 15px; margin-top: 4px; min-height: 44px;
+  }
+  .modal .help { font-size: 12px; color: #6b7280; margin-top: 6px; line-height: 1.5; }
+  .modal .help a { color: #be185d; }
+
+  @media (max-width: 480px) {
+    body { padding: calc(10px + var(--safe-top)) 8px calc(80px + var(--safe-bot)); }
+    th { font-size: 10px; padding: 4px 2px; }
+    td input { padding: 7px 4px; font-size: 14px; }
+    .rate-toggle button { padding: 7px 5px; font-size: 11px; min-width: 32px; }
+    .col-time { width: 18%; } .col-cust { width: 19%; } .col-dep { width: 13%; } .col-fee { width: 17%; } .col-tip { width: 14%; } .col-rate { width: 16%; }
+  }
+</style>
+</head>
+<body>
+
+<h1>
+  <span>Jessie's Job Book</span>
+  <button class="gear" id="openSettings" title="Settings">⚙︎</button>
+</h1>
+<div class="subtitle">Snap a photo → review → done.</div>
+
+<div class="tabs">
+  <div class="tab active" data-view="daily">Daily</div>
+  <div class="tab" data-view="weekly">Weekly</div>
+  <div class="tab" data-view="monthly">Monthly</div>
+</div>
+
+<!-- ===== DAILY VIEW ===== -->
+<div id="view-daily">
+
+  <div class="card">
+    <div class="row-flex between" style="margin-bottom: 10px;">
+      <button class="nav-btn" id="dayPrev">‹</button>
+      <input type="date" id="dayPicker" />
+      <button class="nav-btn" id="dayNext">›</button>
+    </div>
+    <div class="row-flex between">
+      <span class="badge" id="dayLabel">Today</span>
+      <span style="display: flex; align-items: center; gap: 8px;">
+        <span id="syncBadge" style="font-size:11px; color:#9ca3af;"></span>
+        <span class="save-status" id="saveStatus">Saved ✓</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="card" id="photoCard">
+    <div id="photoIdle">
+      <label for="photoInput" class="photo-cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div class="big">📸 Snap a photo of today's sheet</div>
+        <div class="small">Claude will read the numbers — you confirm</div>
+      </label>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" />
+      <div class="toolbar" style="justify-content: center; margin-top: 12px;">
+        <button class="btn secondary" id="enterManual">Or enter manually →</button>
+      </div>
+    </div>
+
+    <div id="photoLoading" style="display:none;">
+      <img id="thumbPreview" class="thumb" alt="" />
+      <div class="loading">
+        <div class="spinner"></div>
+        <div class="msg" id="loadingMsg">Reading your sheet…</div>
+      </div>
+    </div>
+
+    <div id="photoError" style="display:none;">
+      <div class="notice err" id="errorMsg"></div>
+      <div class="toolbar">
+        <button class="btn secondary" id="retryPhoto">Try another photo</button>
+        <button class="btn" id="enterManualFromError">Enter manually</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="rowsCard" style="display:none; overflow-x: auto;">
+    <div class="row-flex between" style="margin-bottom: 10px;">
+      <strong style="color:#9d174d; font-size: 14px;">Review &amp; edit</strong>
+      <button class="btn secondary" id="newPhoto" style="padding:8px 12px; font-size:13px; min-height: 36px;">📸 New photo</button>
+    </div>
+    <div id="extractNotice"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th class="col-time">Time</th>
+          <th class="col-cust">客名</th>
+          <th class="col-dep">Deposit</th>
+          <th class="col-fee">大费</th>
+          <th class="col-tip">Tip</th>
+          <th class="col-rate">Rate</th>
+        </tr>
+      </thead>
+      <tbody id="rowsBody"></tbody>
+    </table>
+    <div class="legend">
+      <strong>30%</strong> = top-down rows. <strong>40%</strong> = bottom-up rows. Tap to toggle.
+    </div>
+    <div class="toolbar">
+      <button class="btn danger" id="clearDay">Clear day</button>
+    </div>
+  </div>
+
+  <div class="summary card" id="summaryCard">
+    <h3>Today's Summary</h3>
+    <div class="stat-grid">
+      <div class="stat"><span class="lbl">Customers</span><span class="val" id="sCount">0</span></div>
+      <div class="stat"><span class="lbl">大费 total</span><span class="val" id="sFee">$0</span></div>
+      <div class="stat"><span class="lbl">Tips total</span><span class="val" id="sTip">$0</span></div>
+      <div class="stat"><span class="lbl">Commission</span><span class="val" id="sComm">$0</span></div>
+      <div class="stat"><span class="lbl">30% rows</span><span class="val" id="sCount30">0</span></div>
+      <div class="stat"><span class="lbl">40% rows</span><span class="val" id="sCount40">0</span></div>
+      <div class="stat big"><span class="lbl">Take-home</span><span class="val" id="sTakeHome">$0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEKLY VIEW ===== -->
+<div id="view-weekly" style="display:none;">
+  <div class="card">
+    <div class="row-flex between" style="margin-bottom: 8px;">
+      <button class="nav-btn" id="weekPrev">‹</button>
+      <div style="text-align:center;">
+        <div style="font-weight:700; color:#9d174d;" id="weekLabel">This Week</div>
+        <div id="weekRange" style="font-size:12px;color:#6b7280;"></div>
+      </div>
+      <button class="nav-btn" id="weekNext">›</button>
+    </div>
+  </div>
+  <div class="card"><ul class="day-list" id="weekList"></ul></div>
+  <div class="summary card">
+    <h3>Week Summary</h3>
+    <div class="stat-grid">
+      <div class="stat"><span class="lbl">Days worked</span><span class="val" id="wDays">0</span></div>
+      <div class="stat"><span class="lbl">Customers</span><span class="val" id="wCount">0</span></div>
+      <div class="stat"><span class="lbl">大费 total</span><span class="val" id="wFee">$0</span></div>
+      <div class="stat"><span class="lbl">Tips total</span><span class="val" id="wTip">$0</span></div>
+      <div class="stat"><span class="lbl">Commission</span><span class="val" id="wComm">$0</span></div>
+      <div class="stat"><span class="lbl">40% rows</span><span class="val" id="wCount40">0</span></div>
+      <div class="stat big"><span class="lbl">Week take-home</span><span class="val" id="wTakeHome">$0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MONTHLY VIEW ===== -->
+<div id="view-monthly" style="display:none;">
+  <div class="card">
+    <div class="row-flex between" style="margin-bottom: 8px;">
+      <button class="nav-btn" id="monthPrev">‹</button>
+      <input type="month" id="monthPicker" />
+      <button class="nav-btn" id="monthNext">›</button>
+    </div>
+  </div>
+  <div class="card"><ul class="day-list" id="monthList"></ul></div>
+  <div class="summary card">
+    <h3>Month Summary</h3>
+    <div class="stat-grid">
+      <div class="stat"><span class="lbl">Days worked</span><span class="val" id="mDays">0</span></div>
+      <div class="stat"><span class="lbl">Customers</span><span class="val" id="mCount">0</span></div>
+      <div class="stat"><span class="lbl">大费 total</span><span class="val" id="mFee">$0</span></div>
+      <div class="stat"><span class="lbl">Tips total</span><span class="val" id="mTip">$0</span></div>
+      <div class="stat"><span class="lbl">Commission</span><span class="val" id="mComm">$0</span></div>
+      <div class="stat"><span class="lbl">40% rows</span><span class="val" id="mCount40">0</span></div>
+      <div class="stat big"><span class="lbl">Month take-home</span><span class="val" id="mTakeHome">$0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="help">One-time setup. Your API key stays on this phone.</p>
+
+    <label for="apiKeyInput">Anthropic API key</label>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+    <div class="help">
+      Get one at <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys.
+      Each photo costs roughly $0.001 (less than a tenth of a cent).
+    </div>
+
+    <label for="rate30Input">Normal commission rate (%)</label>
+    <input type="number" id="rate30Input" value="30" min="0" max="100" step="1" />
+
+    <label for="rate40Input">Bottom-up commission rate (%)</label>
+    <input type="number" id="rate40Input" value="40" min="0" max="100" step="1" />
+
+    <label for="sheetsUrlInput">Google Sheets sync URL</label>
+    <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+    <div class="help">
+      Optional. If set, every saved day also goes to your spreadsheet. See the setup guide Mike gave you for how to get this URL.
+      <button id="syncNowBtn" type="button" style="margin-top:8px; background:#fff; color:#9d174d; border:1px solid #f9a8d4; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer;">Sync all data now</button>
+      <span id="syncStatus" style="margin-left:8px; font-size:12px; color:#6b7280;"></span>
+    </div>
+
+    <div class="toolbar" style="margin-top: 20px;">
+      <button class="btn" id="saveSettings">Save</button>
+      <button class="btn secondary" id="closeSettings">Cancel</button>
+      <button class="btn secondary" id="exportData">Export data</button>
+    </div>
+
+    <details style="margin-top: 16px;">
+      <summary style="cursor:pointer; color:#9d174d; font-size:13px;">Danger zone</summary>
+      <div style="padding-top: 10px;">
+        <button class="btn danger" id="wipeAll">Erase ALL data</button>
+        <div class="help">Removes every day on this device. Cannot be undone.</div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Config & Storage
+// ============================================================
+const STORAGE_KEY = 'jessieJobBook_v2';
+const SETTINGS_KEY = 'jessieJobBook_settings_v1';
+
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    return {
+      apiKey: s.apiKey || '',
+      rate30: typeof s.rate30 === 'number' ? s.rate30 : 30,
+      rate40: typeof s.rate40 === 'number' ? s.rate40 : 40,
+      sheetsUrl: s.sheetsUrl || '',
+    };
+  } catch(e) { return { apiKey: '', rate30: 30, rate40: 40, sheetsUrl: '' }; }
+}
+function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+// Sync queue: dates that need to be pushed to Sheets
+const SYNC_QUEUE_KEY = 'jessieJobBook_syncQueue_v1';
+function loadSyncQueue() {
+  try { return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function saveSyncQueue(arr) { localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(arr)); }
+function enqueueSync(dateStr) {
+  const q = loadSyncQueue();
+  if (!q.includes(dateStr)) { q.push(dateStr); saveSyncQueue(q); }
+}
+function dequeueSync(dateStr) {
+  const q = loadSyncQueue().filter(d => d !== dateStr);
+  saveSyncQueue(q);
+}
+
+function loadAll() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { days: {} };
+    const parsed = JSON.parse(raw);
+    return parsed && parsed.days ? parsed : { days: {} };
+  } catch(e) { return { days: {} }; }
+}
+function saveAll(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function emptyRow() { return { time: '', customer: '', deposit: '', fee: '', tip: '', rate: 30 }; }
+function emptyDay() { return { rows: Array.from({length:10}, emptyRow) }; }
+function getDay(dateStr) {
+  const data = loadAll();
+  if (!data.days[dateStr]) return emptyDay();
+  const rows = data.days[dateStr].rows.slice(0, 10);
+  while (rows.length < 10) rows.push(emptyRow());
+  return { rows };
+}
+function dayHasData(dateStr) { return !!loadAll().days[dateStr]; }
+function setDay(dateStr, day) {
+  const data = loadAll();
+  const hasContent = day.rows.some(r => r.time || r.customer || r.deposit || r.fee || r.tip);
+  if (!hasContent) delete data.days[dateStr];
+  else data.days[dateStr] = day;
+  saveAll(data);
+  // Queue for sync
+  enqueueSync(dateStr);
+  scheduleSyncFlush();
+}
+
+// ============================================================
+// Google Sheets sync
+// ============================================================
+let syncFlushTimer = null;
+let isSyncing = false;
+
+function scheduleSyncFlush() {
+  clearTimeout(syncFlushTimer);
+  syncFlushTimer = setTimeout(flushSyncQueue, 800);
+}
+
+async function pushDayToSheet(url, dateStr) {
+  const day = getDay(dateStr);
+  const settings = loadSettings();
+  const payload = {
+    date: dateStr,
+    rows: day.rows.map((r, i) => ({
+      row: i + 1,
+      time: r.time || '',
+      customer: r.customer || '',
+      deposit: r.deposit === '' ? null : Number(r.deposit),
+      fee: r.fee === '' ? null : Number(r.fee),
+      tip: r.tip === '' ? null : Number(r.tip),
+      rate: r.rate === 40 ? 40 : 30,
+    })),
+    rates: { 30: settings.rate30, 40: settings.rate40 },
+  };
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+    redirect: 'follow',
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  let result;
+  try { result = await resp.json(); } catch(e) { result = { ok: true }; }
+  if (result.ok === false) throw new Error(result.error || 'Sync rejected');
+  return result;
+}
+
+async function flushSyncQueue() {
+  if (isSyncing) return;
+  const url = loadSettings().sheetsUrl;
+  if (!url) return;
+  isSyncing = true;
+  try {
+    while (loadSyncQueue().length > 0) {
+      const queue = loadSyncQueue();
+      const dateStr = queue[0];
+      setSyncBadge('syncing', 'Syncing…');
+      try {
+        await pushDayToSheet(url, dateStr);
+        dequeueSync(dateStr);
+        setSyncBadge('ok', 'Synced ✓');
+      } catch (err) {
+        console.warn('Sync failed for', dateStr, err);
+        setSyncBadge('err', 'Sync pending…');
+        break; // stop on failure, will retry later
+      }
+    }
+  } finally {
+    isSyncing = false;
+  }
+}
+
+function setSyncBadge(state, text) {
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = state==='ok' ? '#16a34a' : state==='err' ? '#dc2626' : '#9ca3af';
+  if (state === 'ok') {
+    setTimeout(() => { if (el.textContent === 'Synced ✓') el.textContent = ''; }, 1500);
+  }
+}
+
+async function syncAll() {
+  const url = loadSettings().sheetsUrl;
+  if (!url) { alert('No Google Sheets URL set.'); return; }
+  const allDates = Object.keys(loadAll().days);
+  if (allDates.length === 0) { alert('No data to sync.'); return; }
+  // Queue everything
+  const q = Array.from(new Set([...loadSyncQueue(), ...allDates]));
+  saveSyncQueue(q);
+  const statusEl = document.getElementById('syncStatus');
+  statusEl.textContent = 'Syncing ' + allDates.length + ' day(s)…';
+  await flushSyncQueue();
+  const remaining = loadSyncQueue().length;
+  statusEl.textContent = remaining === 0 ? 'All synced ✓' : (remaining + ' day(s) still pending');
+}
+
+// Retry sync periodically if there's a queue
+setInterval(() => { if (loadSyncQueue().length > 0) flushSyncQueue(); }, 30000);
+// Retry when network comes back
+window.addEventListener('online', flushSyncQueue);
+
+// ============================================================
+// Math
+// ============================================================
+function num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function calcDay(day) {
+  const settings = loadSettings();
+  let fee=0, tip=0, dep=0, comm=0, count=0, c30=0, c40=0;
+  for (const r of day.rows) {
+    const hasContent = r.time || r.customer || r.fee || r.tip || r.deposit;
+    if (!hasContent) continue;
+    count++;
+    const f = num(r.fee), t = num(r.tip), d = num(r.deposit);
+    fee += f; tip += t; dep += d;
+    const ratePct = r.rate === 40 ? settings.rate40 : settings.rate30;
+    comm += f * (ratePct/100);
+    if (r.rate === 40) c40++; else c30++;
+  }
+  return { fee, tip, deposit: dep, commission: comm, takeHome: comm + tip, count, c30, c40 };
+}
+
+// ============================================================
+// Format helpers
+// ============================================================
+function $$(s) { return '$' + (Math.round(s*100)/100).toFixed(2); }
+function todayStr() { const d = new Date(); return d.toISOString().slice(0,10); }
+function fmtDate(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }); }
+function dowShort(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(undefined, { weekday:'short' }); }
+function addDays(dateStr, n) { const d = new Date(dateStr + 'T00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
+function startOfWeek(dateStr) { const d = new Date(dateStr + 'T00:00'); d.setDate(d.getDate() - d.getDay()); return d.toISOString().slice(0,10); }
+function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { if (s === '' || s === null || s === undefined) return ''; return String(s); }
+
+// ============================================================
+// State
+// ============================================================
+let currentView = 'daily';
+let currentDate = todayStr();
+let currentWeekStart = startOfWeek(currentDate);
+let currentMonth = currentDate.slice(0,7);
+let saveTimer = null;
+
+// ============================================================
+// Tabs
+// ============================================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentView = tab.dataset.view;
+    document.getElementById('view-daily').style.display = currentView==='daily' ? '' : 'none';
+    document.getElementById('view-weekly').style.display = currentView==='weekly' ? '' : 'none';
+    document.getElementById('view-monthly').style.display = currentView==='monthly' ? '' : 'none';
+    if (currentView==='weekly') renderWeek();
+    if (currentView==='monthly') renderMonth();
+  });
+});
+
+// ============================================================
+// Daily View
+// ============================================================
+const rowsBody = document.getElementById('rowsBody');
+const dayPicker = document.getElementById('dayPicker');
+const dayLabel = document.getElementById('dayLabel');
+const saveStatus = document.getElementById('saveStatus');
+const photoCard = document.getElementById('photoCard');
+const rowsCard = document.getElementById('rowsCard');
+
+function showState(state) {
+  document.getElementById('photoIdle').style.display = state==='idle' ? '' : 'none';
+  document.getElementById('photoLoading').style.display = state==='loading' ? '' : 'none';
+  document.getElementById('photoError').style.display = state==='error' ? '' : 'none';
+  rowsCard.style.display = (state==='review' || state==='manual') ? '' : 'none';
+  photoCard.style.display = (state==='review') ? 'none' : '';
+}
+
+function renderDay() {
+  dayPicker.value = currentDate;
+  dayLabel.textContent = currentDate === todayStr() ? 'Today · ' + fmtDate(currentDate) : fmtDate(currentDate);
+  if (dayHasData(currentDate)) {
+    populateRows(getDay(currentDate).rows);
+    showState('manual');
+    document.getElementById('extractNotice').innerHTML = '';
+  } else {
+    showState('idle');
+  }
+  updateDaySummary();
+}
+
+function populateRows(rows) {
+  rowsBody.innerHTML = '';
+  for (let i=0; i<10; i++) {
+    const r = rows[i] || emptyRow();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${i+1}</td>
+      <td><input data-i="${i}" data-f="time" type="text" inputmode="numeric" value="${escapeHtml(r.time)}" placeholder="11:30" /></td>
+      <td><input data-i="${i}" data-f="customer" type="text" value="${escapeHtml(r.customer)}" placeholder="" /></td>
+      <td><input data-i="${i}" data-f="deposit" type="number" inputmode="decimal" class="num" value="${escapeAttr(r.deposit)}" placeholder="0" /></td>
+      <td><input data-i="${i}" data-f="fee" type="number" inputmode="decimal" class="num" value="${escapeAttr(r.fee)}" placeholder="0" /></td>
+      <td><input data-i="${i}" data-f="tip" type="number" inputmode="decimal" class="num" value="${escapeAttr(r.tip)}" placeholder="0" /></td>
+      <td>
+        <div class="rate-toggle">
+          <button data-i="${i}" data-rate="30" class="${r.rate===30?'active':''}">30%</button>
+          <button data-i="${i}" data-rate="40" class="${r.rate===40?'active':''}">40%</button>
+        </div>
+      </td>
+    `;
+    rowsBody.appendChild(tr);
+  }
+  rowsBody.querySelectorAll('input').forEach(inp => inp.addEventListener('input', onCellChange));
+  rowsBody.querySelectorAll('.rate-toggle button').forEach(btn => btn.addEventListener('click', onRateClick));
+}
+
+function readRowsFromDOM() {
+  const rows = Array.from({length:10}, emptyRow);
+  rowsBody.querySelectorAll('input').forEach(inp => {
+    const i = +inp.dataset.i, f = inp.dataset.f;
+    rows[i][f] = inp.value;
+  });
+  rowsBody.querySelectorAll('.rate-toggle button.active').forEach(btn => {
+    const i = +btn.dataset.i, rate = +btn.dataset.rate;
+    rows[i].rate = rate;
+  });
+  return { rows };
+}
+
+function onCellChange() { scheduleSave(); updateDaySummary(); }
+function onRateClick(e) {
+  const btn = e.currentTarget;
+  const i = btn.dataset.i, rate = +btn.dataset.rate;
+  rowsBody.querySelectorAll(`.rate-toggle button[data-i="${i}"]`).forEach(b => b.classList.toggle('active', +b.dataset.rate === rate));
+  scheduleSave(); updateDaySummary();
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    setDay(currentDate, readRowsFromDOM());
+    saveStatus.classList.add('show');
+    setTimeout(() => saveStatus.classList.remove('show'), 1200);
+  }, 300);
+}
+
+function updateDaySummary() {
+  let day;
+  if (rowsCard.style.display !== 'none' && rowsBody.children.length > 0) {
+    day = readRowsFromDOM();
+  } else {
+    day = getDay(currentDate);
+  }
+  const s = calcDay(day);
+  document.getElementById('sCount').textContent = s.count;
+  document.getElementById('sFee').textContent = $$(s.fee);
+  document.getElementById('sTip').textContent = $$(s.tip);
+  document.getElementById('sComm').textContent = $$(s.commission);
+  document.getElementById('sCount30').textContent = s.c30;
+  document.getElementById('sCount40').textContent = s.c40;
+  document.getElementById('sTakeHome').textContent = $$(s.takeHome);
+}
+
+document.getElementById('dayPrev').addEventListener('click', () => {
+  if (rowsCard.style.display !== 'none') setDay(currentDate, readRowsFromDOM());
+  currentDate = addDays(currentDate, -1); renderDay();
+});
+document.getElementById('dayNext').addEventListener('click', () => {
+  if (rowsCard.style.display !== 'none') setDay(currentDate, readRowsFromDOM());
+  currentDate = addDays(currentDate, 1); renderDay();
+});
+dayPicker.addEventListener('change', () => {
+  if (rowsCard.style.display !== 'none') setDay(currentDate, readRowsFromDOM());
+  currentDate = dayPicker.value; renderDay();
+});
+
+document.getElementById('clearDay').addEventListener('click', () => {
+  if (!confirm('Clear all rows for ' + fmtDate(currentDate) + '?')) return;
+  const data = loadAll(); delete data.days[currentDate]; saveAll(data);
+  renderDay();
+});
+
+document.getElementById('enterManual').addEventListener('click', () => {
+  populateRows(emptyDay().rows);
+  showState('manual');
+  document.getElementById('extractNotice').innerHTML = '';
+});
+document.getElementById('newPhoto').addEventListener('click', () => {
+  setDay(currentDate, readRowsFromDOM());
+  showState('idle');
+  document.getElementById('photoInput').value = '';
+});
+document.getElementById('enterManualFromError').addEventListener('click', () => {
+  populateRows(emptyDay().rows); showState('manual');
+});
+document.getElementById('retryPhoto').addEventListener('click', () => {
+  showState('idle'); document.getElementById('photoInput').value = '';
+});
+
+// ============================================================
+// Photo extraction via Anthropic API
+// ============================================================
+const photoInput = document.getElementById('photoInput');
+const thumbPreview = document.getElementById('thumbPreview');
+const loadingMsg = document.getElementById('loadingMsg');
+const errorMsg = document.getElementById('errorMsg');
+
+// Reset value before opening picker so same file re-fires change
+photoInput.addEventListener('click', () => { photoInput.value = ''; });
+
+photoInput.addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const { apiKey } = loadSettings();
+  if (!apiKey) {
+    document.getElementById('settingsModal').classList.add('show');
+    document.getElementById('apiKeyInput').focus();
+    return;
+  }
+
+  try {
+    const dataUrl = await fileToDataURL(file);
+    const resized = await resizeImage(dataUrl, 1600);
+    thumbPreview.src = resized;
+    showState('loading');
+    loadingMsg.textContent = 'Reading your sheet…';
+    const result = await extractFromPhoto(resized, apiKey);
+    applyExtractedResult(result);
+  } catch (err) {
+    console.error(err);
+    errorMsg.innerHTML = '<strong>Could not read the photo.</strong><br/>' + escapeHtml(err.message || String(err));
+    showState('error');
+  }
+});
+
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(fr.error || new Error('read failed'));
+    fr.readAsDataURL(file);
+  });
+}
+
+function resizeImage(dataUrl, maxDim) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width >= height) { height = Math.round(height * maxDim / width); width = maxDim; }
+        else { width = Math.round(width * maxDim / height); height = maxDim; }
+      }
+      const c = document.createElement('canvas');
+      c.width = width; c.height = height;
+      c.getContext('2d').drawImage(img, 0, 0, width, height);
+      resolve(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
+async function extractFromPhoto(dataUrl, apiKey) {
+  // dataUrl looks like "data:image/jpeg;base64,XXXX..."
+  const match = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+  if (!match) throw new Error('Invalid image data');
+  const mediaType = match[1];
+  const base64Data = match[2];
+
+  const prompt = `You are reading a photo of a handwritten daily job sheet for a salon/spa worker named Jessie. The sheet has up to 10 numbered rows with these columns:
+- # (row number 1-10)
+- TIME (e.g. "11:30", "2:55", "6:20")
+- 客名 (customer name, often blank or short text/code)
+- depoit / Deposit (sometimes a number like 27 or 79, sometimes "Vip", often blank)
+- 大费 (the service fee, a dollar amount, the main column)
+- Tip (a tip amount)
+
+Symbols next to numbers indicate payment method and MUST BE IGNORED when extracting the numeric value:
+- V = Visa
+- Ⓩ (Z in a circle, may look like @) = Zelle
+- $ = cash
+- ✱ / * = check or generic mark
+
+The sheet may also have:
+- A date written somewhere (e.g. at the top or in a corner). If found, format as YYYY-MM-DD.
+- A CIRCLED NUMBER at the bottom right — this is the total of the Tip column for that day (use it to verify your tip readings).
+
+Rate detection rule:
+- Rows entered TOP-DOWN (1, 2, 3, ...) are at the 30% rate.
+- Rows entered BOTTOM-UP (e.g. row 10, 9, ...) are at the 40% rate.
+- You detect bottom-up rows by looking for a GAP of empty rows in the middle (e.g. rows 1-7 filled, rows 8-9 empty, row 10 filled → row 10 is 40%).
+- If the sheet is filled consecutively from row 1 with no gap, all rows are 30%.
+
+Return ONLY a JSON object (no markdown, no commentary) with this exact shape:
+{
+  "date": "YYYY-MM-DD" or null,
+  "rows": [
+    {"row": 1, "time": "11:30", "customer": "mlisa", "deposit": null, "fee": 135, "tip": 27, "rate": 30}
+  ],
+  "expected_tip_total": 142 or null,
+  "notes": "any uncertainty notes, short"
+}
+
+Rules:
+- Only include rows that have at least one filled value.
+- Strip all payment-method symbols from numbers — extract only the numeric value.
+- Use null for blank numeric fields, empty string "" for blank text fields.
+- "rate" must be exactly 30 or 40.
+- Return the JSON only.`;
+
+  const body = {
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 2000,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+        { type: 'text', text: prompt }
+      ]
+    }]
+  };
+
+  let resp;
+  try {
+    resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    throw new Error('Network error: ' + err.message);
+  }
+
+  if (!resp.ok) {
+    let detail = '';
+    try { const j = await resp.json(); detail = j.error?.message || JSON.stringify(j); } catch(e) { detail = await resp.text(); }
+    if (resp.status === 401) throw new Error('Your API key is invalid. Open Settings (⚙︎) and re-enter it.');
+    if (resp.status === 429) throw new Error('Too many requests — wait a moment and try again.');
+    throw new Error('API ' + resp.status + ': ' + detail);
+  }
+
+  const data = await resp.json();
+  const text = data.content?.[0]?.text || '';
+  return parseExtractionResponse(text);
+}
+
+function parseExtractionResponse(text) {
+  let t = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON in response');
+  let parsed;
+  try { parsed = JSON.parse(t.slice(start, end + 1)); }
+  catch(e) { throw new Error('Bad JSON: ' + e.message); }
+  if (!parsed.rows || !Array.isArray(parsed.rows)) throw new Error('No rows in response');
+  return parsed;
+}
+
+function applyExtractedResult(result) {
+  if (result.date && /^\d{4}-\d{2}-\d{2}$/.test(result.date)) {
+    currentDate = result.date;
+    dayPicker.value = currentDate;
+  }
+  const rows = Array.from({length:10}, emptyRow);
+  for (const r of result.rows) {
+    const idx = (typeof r.row === 'number' && r.row >= 1 && r.row <= 10) ? r.row - 1 : -1;
+    if (idx < 0) continue;
+    rows[idx] = {
+      time: r.time || '',
+      customer: r.customer || '',
+      deposit: r.deposit == null ? '' : String(r.deposit),
+      fee: r.fee == null ? '' : String(r.fee),
+      tip: r.tip == null ? '' : String(r.tip),
+      rate: r.rate === 40 ? 40 : 30,
+    };
+  }
+  populateRows(rows);
+  showState('review');
+  setDay(currentDate, { rows });
+  const notice = document.getElementById('extractNotice');
+  const extractedTipSum = rows.reduce((acc, r) => acc + num(r.tip), 0);
+  let html = '<div class="notice ok">Got it ✓ Please double-check below.</div>';
+  if (result.expected_tip_total != null) {
+    const expected = Number(result.expected_tip_total);
+    if (Math.abs(expected - extractedTipSum) >= 0.5) {
+      html = `<div class="notice">Heads up: the circled total says <strong>${expected}</strong>, but tips below add to <strong>${extractedTipSum}</strong>. Verify the Tip column.</div>` + html;
+    }
+  }
+  if (result.notes) html += `<div class="notice"><strong>Notes:</strong> ${escapeHtml(result.notes)}</div>`;
+  dayLabel.textContent = currentDate === todayStr() ? 'Today · ' + fmtDate(currentDate) : fmtDate(currentDate);
+  notice.innerHTML = html;
+  updateDaySummary();
+}
+
+// ============================================================
+// Weekly View
+// ============================================================
+function renderWeek() {
+  const weekStart = currentWeekStart;
+  const weekEnd = addDays(weekStart, 6);
+  document.getElementById('weekLabel').textContent =
+    (weekStart <= todayStr() && weekEnd >= todayStr()) ? 'This Week' :
+    (weekEnd < todayStr() ? 'Past Week' : 'Future Week');
+  document.getElementById('weekRange').textContent = fmtDate(weekStart) + ' – ' + fmtDate(weekEnd);
+
+  const list = document.getElementById('weekList');
+  list.innerHTML = '';
+  let wFee=0, wTip=0, wComm=0, wTake=0, wCount=0, wDays=0, wC40=0;
+  for (let i=0; i<7; i++) {
+    const d = addDays(weekStart, i);
+    const day = getDay(d);
+    const s = calcDay(day);
+    if (s.count > 0) wDays++;
+    wFee += s.fee; wTip += s.tip; wComm += s.commission; wTake += s.takeHome; wCount += s.count; wC40 += s.c40;
+    const li = document.createElement('li');
+    li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
+    li.innerHTML = `
+      <div><div class="dow">${dowShort(d)}</div><div class="date">${fmtDate(d)}</div></div>
+      <div class="mini">${s.count} cust</div>
+      <div class="mini">tip ${$$(s.tip)}</div>
+      <div class="num">${$$(s.takeHome)}</div>
+    `;
+    li.addEventListener('click', () => {
+      currentDate = d; document.querySelector('.tab[data-view="daily"]').click(); renderDay();
+    });
+    list.appendChild(li);
+  }
+  document.getElementById('wDays').textContent = wDays;
+  document.getElementById('wCount').textContent = wCount;
+  document.getElementById('wFee').textContent = $$(wFee);
+  document.getElementById('wTip').textContent = $$(wTip);
+  document.getElementById('wComm').textContent = $$(wComm);
+  document.getElementById('wCount40').textContent = wC40;
+  document.getElementById('wTakeHome').textContent = $$(wTake);
+}
+document.getElementById('weekPrev').addEventListener('click', () => { currentWeekStart = addDays(currentWeekStart, -7); renderWeek(); });
+document.getElementById('weekNext').addEventListener('click', () => { currentWeekStart = addDays(currentWeekStart, 7); renderWeek(); });
+
+// ============================================================
+// Monthly View
+// ============================================================
+const monthPicker = document.getElementById('monthPicker');
+function renderMonth() {
+  monthPicker.value = currentMonth;
+  const [y, m] = currentMonth.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const list = document.getElementById('monthList');
+  list.innerHTML = '';
+  let mFee=0, mTip=0, mComm=0, mTake=0, mCount=0, mDays=0, mC40=0;
+  for (let i=1; i<=lastDay; i++) {
+    const d = `${y}-${String(m).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+    const day = getDay(d);
+    const s = calcDay(day);
+    if (s.count > 0) {
+      mDays++;
+      mFee += s.fee; mTip += s.tip; mComm += s.commission; mTake += s.takeHome; mCount += s.count; mC40 += s.c40;
+      const li = document.createElement('li');
+      li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
+      li.innerHTML = `
+        <div><div class="dow">${dowShort(d)}</div><div class="date">${fmtDate(d)}</div></div>
+        <div class="mini">${s.count} cust</div>
+        <div class="mini">tip ${$$(s.tip)}</div>
+        <div class="num">${$$(s.takeHome)}</div>
+      `;
+      li.addEventListener('click', () => {
+        currentDate = d; document.querySelector('.tab[data-view="daily"]').click(); renderDay();
+      });
+      list.appendChild(li);
+    }
+  }
+  if (mDays === 0) list.innerHTML = '<div class="empty">No entries this month yet.</div>';
+  document.getElementById('mDays').textContent = mDays;
+  document.getElementById('mCount').textContent = mCount;
+  document.getElementById('mFee').textContent = $$(mFee);
+  document.getElementById('mTip').textContent = $$(mTip);
+  document.getElementById('mComm').textContent = $$(mComm);
+  document.getElementById('mCount40').textContent = mC40;
+  document.getElementById('mTakeHome').textContent = $$(mTake);
+}
+function shiftMonth(delta) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  renderMonth();
+}
+document.getElementById('monthPrev').addEventListener('click', () => shiftMonth(-1));
+document.getElementById('monthNext').addEventListener('click', () => shiftMonth(1));
+monthPicker.addEventListener('change', () => { currentMonth = monthPicker.value; renderMonth(); });
+
+// ============================================================
+// Settings modal
+// ============================================================
+const settingsModal = document.getElementById('settingsModal');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const rate30Input = document.getElementById('rate30Input');
+const rate40Input = document.getElementById('rate40Input');
+const sheetsUrlInput = document.getElementById('sheetsUrlInput');
+
+function openSettingsModal() {
+  const s = loadSettings();
+  apiKeyInput.value = s.apiKey;
+  rate30Input.value = s.rate30;
+  rate40Input.value = s.rate40;
+  sheetsUrlInput.value = s.sheetsUrl;
+  document.getElementById('syncStatus').textContent = '';
+  settingsModal.classList.add('show');
+}
+document.getElementById('openSettings').addEventListener('click', openSettingsModal);
+document.getElementById('closeSettings').addEventListener('click', () => settingsModal.classList.remove('show'));
+document.getElementById('saveSettings').addEventListener('click', () => {
+  const s = {
+    apiKey: apiKeyInput.value.trim(),
+    rate30: parseFloat(rate30Input.value) || 30,
+    rate40: parseFloat(rate40Input.value) || 40,
+    sheetsUrl: sheetsUrlInput.value.trim(),
+  };
+  saveSettings(s);
+  settingsModal.classList.remove('show');
+  renderDay();
+  if (s.sheetsUrl) scheduleSyncFlush();
+});
+document.getElementById('syncNowBtn').addEventListener('click', async () => {
+  // Save current URL first
+  const url = sheetsUrlInput.value.trim();
+  if (!url) { alert('Paste your Google Sheets URL first.'); return; }
+  const s = loadSettings();
+  saveSettings({ ...s, sheetsUrl: url });
+  await syncAll();
+});
+document.getElementById('exportData').addEventListener('click', () => {
+  const data = loadAll();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'jessie-job-book-' + todayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('wipeAll').addEventListener('click', () => {
+  if (!confirm('Erase EVERY day on this device? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  settingsModal.classList.remove('show');
+  renderDay();
+});
+// Tap outside the modal closes it
+settingsModal.addEventListener('click', (e) => {
+  if (e.target === settingsModal) settingsModal.classList.remove('show');
+});
+
+// ============================================================
+// Boot
+// ============================================================
+renderDay();
+window.addEventListener('beforeunload', () => {
+  if (currentView === 'daily' && rowsCard.style.display !== 'none') setDay(currentDate, readRowsFromDOM());
+});
+
+// Prompt for API key on first launch
+if (!loadSettings().apiKey) {
+  setTimeout(() => {
+    if (!loadSettings().apiKey) openSettingsModal();
+  }, 600);
+}
+</script>
+
+</body>
+</html>

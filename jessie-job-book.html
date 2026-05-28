@@ -20,6 +20,9 @@
   body { max-width: 760px; margin: 0 auto; padding: calc(14px + var(--safe-top)) 14px calc(80px + var(--safe-bot)); }
   h1 { font-size: 22px; margin: 0 0 4px; color: #9d174d; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: space-between; }
   .gear { background: #fce7f3; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 16px; }
+  .lang-toggle { background: #fce7f3; border: none; height: 36px; padding: 0 10px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: #9d174d; margin-right: 6px; }
+  .lang-toggle:active { background: #fbcfe8; }
+  .h-actions { display: flex; align-items: center; gap: 4px; }
   .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
 
   .tabs { display: flex; gap: 6px; background: #fce7f3; padding: 4px; border-radius: 999px; margin-bottom: 14px; }
@@ -163,15 +166,18 @@
 <body>
 
 <h1>
-  <span>Jessie's Job Book</span>
-  <button class="gear" id="openSettings" title="Settings">⚙︎</button>
+  <span data-i18n="appTitle">Jessie's Job Book</span>
+  <span class="h-actions">
+    <button class="lang-toggle" id="langToggle" title="Language">中文</button>
+    <button class="gear" id="openSettings" title="Settings">⚙︎</button>
+  </span>
 </h1>
-<div class="subtitle">Snap a photo → review → done.</div>
+<div class="subtitle" data-i18n="subtitle">Snap a photo → review → done.</div>
 
 <div class="tabs">
-  <div class="tab active" data-view="daily">Daily</div>
-  <div class="tab" data-view="weekly">Weekly</div>
-  <div class="tab" data-view="monthly">Monthly</div>
+  <div class="tab active" data-view="daily" data-i18n="tabDaily">Daily</div>
+  <div class="tab" data-view="weekly" data-i18n="tabWeekly">Weekly</div>
+  <div class="tab" data-view="monthly" data-i18n="tabMonthly">Monthly</div>
 </div>
 
 <!-- ===== DAILY VIEW ===== -->
@@ -187,7 +193,7 @@
       <span class="badge" id="dayLabel">Today</span>
       <span style="display: flex; align-items: center; gap: 8px;">
         <span id="syncBadge" style="font-size:11px; color:#9ca3af;"></span>
-        <span class="save-status" id="saveStatus">Saved ✓</span>
+        <span class="save-status" id="saveStatus" data-i18n="saved">Saved ✓</span>
       </span>
     </div>
   </div>
@@ -196,12 +202,12 @@
     <div id="photoIdle">
       <label for="photoInput" class="photo-cta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg>
-        <div class="big">📸 Snap a photo of today's sheet</div>
-        <div class="small">Claude will read the numbers — you confirm</div>
+        <div class="big" data-i18n="snapPhoto">📸 Snap a photo of today's sheet</div>
+        <div class="small" data-i18n="snapPhotoDesc">Claude will read the numbers — you confirm</div>
       </label>
       <input type="file" id="photoInput" accept="image/*" />
       <div class="toolbar" style="justify-content: center; margin-top: 12px;">
-        <button class="btn secondary" id="enterManual">Or enter manually →</button>
+        <button class="btn secondary" id="enterManual" data-i18n="enterManual">Or enter manually →</button>
       </div>
     </div>
 
@@ -209,36 +215,36 @@
       <img id="thumbPreview" class="thumb" alt="" />
       <div class="loading">
         <div class="spinner"></div>
-        <div class="msg" id="loadingMsg">Reading your sheet…</div>
+        <div class="msg" id="loadingMsg" data-i18n="readingSheet">Reading your sheet…</div>
       </div>
     </div>
 
     <div id="photoError" style="display:none;">
       <div class="notice err" id="errorMsg"></div>
       <div class="toolbar">
-        <button class="btn secondary" id="retryPhoto">Try another photo</button>
-        <button class="btn" id="enterManualFromError">Enter manually</button>
+        <button class="btn secondary" id="retryPhoto" data-i18n="tryAnother">Try another photo</button>
+        <button class="btn" id="enterManualFromError" data-i18n="enterManualBtn">Enter manually</button>
       </div>
     </div>
   </div>
 
   <div class="card" id="rowsCard" style="display:none; overflow-x: auto;">
     <div class="row-flex between" style="margin-bottom: 10px;">
-      <strong style="color:#9d174d; font-size: 14px;">Review &amp; edit</strong>
-      <button class="btn secondary" id="newPhoto" style="padding:8px 12px; font-size:13px; min-height: 36px;">📸 New photo</button>
+      <strong style="color:#9d174d; font-size: 14px;" data-i18n="reviewEdit">Review &amp; edit</strong>
+      <button class="btn secondary" id="newPhoto" style="padding:8px 12px; font-size:13px; min-height: 36px;" data-i18n="newPhoto">📸 New photo</button>
     </div>
     <div id="extractNotice"></div>
     <table>
       <thead>
         <tr>
           <th>#</th>
-          <th class="col-time">Time</th>
+          <th class="col-time" data-i18n="colTime">Time</th>
           <th class="col-cust">客名</th>
-          <th class="col-note">Note</th>
-          <th class="col-dep">Deposit</th>
+          <th class="col-note" data-i18n="colNote">Note</th>
+          <th class="col-dep" data-i18n="colDeposit">Deposit</th>
           <th class="col-fee">大费</th>
-          <th class="col-tip">Tip</th>
-          <th class="col-rate">Rate</th>
+          <th class="col-tip" data-i18n="colTip">Tip</th>
+          <th class="col-rate" data-i18n="colRate">Rate</th>
         </tr>
       </thead>
       <tbody id="rowsBody"></tbody>
@@ -250,34 +256,32 @@
       <div class="foot-cell"><div class="foot-label">Tip</div><div class="foot-value" id="footTip">$0</div></div>
     </div>
     <div class="total-comm-row">
-      <div class="foot-cell"><div class="foot-label">Total Commission</div><div class="foot-value" id="footCommission">$0</div></div>
+      <div class="foot-cell"><div class="foot-label" data-i18n="totalCommission">Total Commission</div><div class="foot-value" id="footCommission">$0</div></div>
     </div>
 
     <div class="pending-row" id="pendingRow">
-      <div class="foot-cell"><div class="foot-label">Total Pending Commission</div><div class="foot-value" id="footPending">$0</div></div>
-      <button class="paid-btn" id="markPaidBtn">Paid</button>
+      <div class="foot-cell"><div class="foot-label" data-i18n="totalPending">Total Pending Commission</div><div class="foot-value" id="footPending">$0</div></div>
+      <button class="paid-btn" id="markPaidBtn" data-i18n="paidBtn">Paid</button>
     </div>
     <div class="paid-display" id="paidDisplay" style="display:none;">
-      <div class="foot-cell"><div class="foot-label">Commission Paid</div><div class="foot-value" id="paidLabel">$0 on —</div></div>
-      <button class="undo-btn" id="undoPaidBtn">Undo</button>
+      <div class="foot-cell"><div class="foot-label" data-i18n="commissionPaid">Commission Paid</div><div class="foot-value" id="paidLabel">$0 on —</div></div>
+      <button class="undo-btn" id="undoPaidBtn" data-i18n="undo">Undo</button>
     </div>
 
-    <div class="legend">
-      <strong>30%</strong> = top-down rows. <strong>40%</strong> = bottom-up rows. Tap to toggle.
-    </div>
+    <div class="legend" data-i18n="legendRates"><strong>30%</strong> = top-down rows. <strong>40%</strong> = bottom-up rows. Tap to toggle.</div>
     <div class="toolbar">
-      <button class="btn danger" id="clearDay">Clear day</button>
+      <button class="btn danger" id="clearDay" data-i18n="clearDay">Clear day</button>
     </div>
   </div>
 
   <div class="summary card" id="summaryCard">
-    <h3>Today's Summary</h3>
+    <h3 data-i18n="todaysSummary">Today's Summary</h3>
     <div class="stat-grid">
       <div class="stat"><span class="lbl">30% 大费</span><span class="val" id="s30Fee">$0</span></div>
       <div class="stat"><span class="lbl">40% 大费</span><span class="val" id="s40Fee">$0</span></div>
-      <div class="stat"><span class="lbl">Tip</span><span class="val" id="sTip">$0</span></div>
-      <div class="stat"><span class="lbl">Total Commission</span><span class="val" id="sComm">$0</span></div>
-      <div class="stat big"><span class="lbl">Take-home</span><span class="val" id="sTakeHome">$0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="statTip">Tip</span><span class="val" id="sTip">$0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="totalCommission">Total Commission</span><span class="val" id="sComm">$0</span></div>
+      <div class="stat big"><span class="lbl" data-i18n="statTakeHome">Take-home</span><span class="val" id="sTakeHome">$0</span></div>
     </div>
   </div>
 </div>
@@ -296,18 +300,18 @@
   </div>
   <div class="card"><ul class="day-list" id="weekList"></ul></div>
   <div class="summary card">
-    <h3>Week Summary</h3>
+    <h3 data-i18n="weekSummary">Week Summary</h3>
     <div class="stat-grid">
-      <div class="stat"><span class="lbl">Days worked</span><span class="val" id="wDays">0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="statDaysWorked">Days worked</span><span class="val" id="wDays">0</span></div>
       <div class="stat"><span class="lbl">30% 大费</span><span class="val" id="w30Fee">$0</span></div>
       <div class="stat"><span class="lbl">40% 大费</span><span class="val" id="w40Fee">$0</span></div>
-      <div class="stat"><span class="lbl">Tip</span><span class="val" id="wTip">$0</span></div>
-      <div class="stat"><span class="lbl">Total Commission</span><span class="val" id="wComm">$0</span></div>
-      <div class="stat big"><span class="lbl">Week take-home</span><span class="val" id="wTakeHome">$0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="statTip">Tip</span><span class="val" id="wTip">$0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="totalCommission">Total Commission</span><span class="val" id="wComm">$0</span></div>
+      <div class="stat big"><span class="lbl" data-i18n="statWeekTakeHome">Week take-home</span><span class="val" id="wTakeHome">$0</span></div>
     </div>
     <div class="pending-row" id="wPendingRow" style="margin-top: 14px;">
-      <div class="foot-cell"><div class="foot-label">Total Pending Commission</div><div class="foot-value" id="wPending">$0</div></div>
-      <button class="paid-btn" id="wMarkPaidBtn">Paid</button>
+      <div class="foot-cell"><div class="foot-label" data-i18n="totalPending">Total Pending Commission</div><div class="foot-value" id="wPending">$0</div></div>
+      <button class="paid-btn" id="wMarkPaidBtn" data-i18n="paidBtn">Paid</button>
     </div>
   </div>
 </div>
@@ -323,18 +327,18 @@
   </div>
   <div class="card"><ul class="day-list" id="monthList"></ul></div>
   <div class="summary card">
-    <h3>Month Summary</h3>
+    <h3 data-i18n="monthSummary">Month Summary</h3>
     <div class="stat-grid">
-      <div class="stat"><span class="lbl">Days worked</span><span class="val" id="mDays">0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="statDaysWorked">Days worked</span><span class="val" id="mDays">0</span></div>
       <div class="stat"><span class="lbl">30% 大费</span><span class="val" id="m30Fee">$0</span></div>
       <div class="stat"><span class="lbl">40% 大费</span><span class="val" id="m40Fee">$0</span></div>
-      <div class="stat"><span class="lbl">Tip</span><span class="val" id="mTip">$0</span></div>
-      <div class="stat"><span class="lbl">Total Commission</span><span class="val" id="mComm">$0</span></div>
-      <div class="stat big"><span class="lbl">Month take-home</span><span class="val" id="mTakeHome">$0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="statTip">Tip</span><span class="val" id="mTip">$0</span></div>
+      <div class="stat"><span class="lbl" data-i18n="totalCommission">Total Commission</span><span class="val" id="mComm">$0</span></div>
+      <div class="stat big"><span class="lbl" data-i18n="statMonthTakeHome">Month take-home</span><span class="val" id="mTakeHome">$0</span></div>
     </div>
     <div class="pending-row" id="mPendingRow" style="margin-top: 14px;">
-      <div class="foot-cell"><div class="foot-label">Total Pending Commission</div><div class="foot-value" id="mPending">$0</div></div>
-      <button class="paid-btn" id="mMarkPaidBtn">Paid</button>
+      <div class="foot-cell"><div class="foot-label" data-i18n="totalPending">Total Pending Commission</div><div class="foot-value" id="mPending">$0</div></div>
+      <button class="paid-btn" id="mMarkPaidBtn" data-i18n="paidBtn">Paid</button>
     </div>
   </div>
 </div>
@@ -342,11 +346,11 @@
 <!-- ===== CONFIRM PAID MODAL ===== -->
 <div class="modal-bg" id="confirmModal">
   <div class="modal">
-    <h2>Are you sure you got paid?</h2>
+    <h2 data-i18n="confirmPaidTitle">Are you sure you got paid?</h2>
     <p id="confirmDetail" class="help" style="font-size:14px; color:#1f2937; margin-top:8px;"></p>
     <div class="toolbar" style="margin-top: 20px; justify-content: flex-end;">
-      <button class="btn secondary" id="confirmCancel">Cancel</button>
-      <button class="btn" id="confirmYes" style="background:#16a34a;">Yes, paid</button>
+      <button class="btn secondary" id="confirmCancel" data-i18n="cancel">Cancel</button>
+      <button class="btn" id="confirmYes" style="background:#16a34a;" data-i18n="confirmPaidYes">Yes, paid</button>
     </div>
   </div>
 </div>
@@ -354,41 +358,41 @@
 <!-- ===== SETTINGS MODAL ===== -->
 <div class="modal-bg" id="settingsModal">
   <div class="modal">
-    <h2>Settings</h2>
-    <p class="help">One-time setup. Your API key stays on this phone.</p>
+    <h2 data-i18n="settings">Settings</h2>
+    <p class="help" data-i18n="oneTimeSetup">One-time setup. Your API key stays on this phone.</p>
 
-    <label for="apiKeyInput">Anthropic API key</label>
+    <label for="apiKeyInput" data-i18n="apiKeyLabel">Anthropic API key</label>
     <input type="password" id="apiKeyInput" placeholder="sk-ant-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
-    <div class="help">
+    <div class="help" data-i18n="apiKeyHelp" data-i18n-html="1">
       Get one at <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys.
       Each photo costs roughly $0.001 (less than a tenth of a cent).
     </div>
 
-    <label for="rate30Input">Normal commission rate (%)</label>
+    <label for="rate30Input" data-i18n="rate30Label">Normal commission rate (%)</label>
     <input type="number" id="rate30Input" value="30" min="0" max="100" step="1" />
 
-    <label for="rate40Input">Bottom-up commission rate (%)</label>
+    <label for="rate40Input" data-i18n="rate40Label">Bottom-up commission rate (%)</label>
     <input type="number" id="rate40Input" value="40" min="0" max="100" step="1" />
 
-    <label for="sheetsUrlInput">Google Sheets sync URL</label>
+    <label for="sheetsUrlInput" data-i18n="sheetsUrlLabel">Google Sheets sync URL</label>
     <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
     <div class="help">
-      Optional. If set, every saved day also goes to your spreadsheet. See the setup guide Mike gave you for how to get this URL.
-      <button id="syncNowBtn" type="button" style="margin-top:8px; background:#fff; color:#9d174d; border:1px solid #f9a8d4; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer;">Sync all data now</button>
+      <span data-i18n="sheetsUrlHelp">Optional. If set, every saved day also goes to your spreadsheet.</span>
+      <button id="syncNowBtn" type="button" style="margin-top:8px; background:#fff; color:#9d174d; border:1px solid #f9a8d4; padding:8px 12px; border-radius:8px; font-weight:600; cursor:pointer;" data-i18n="syncAllNow">Sync all data now</button>
       <span id="syncStatus" style="margin-left:8px; font-size:12px; color:#6b7280;"></span>
     </div>
 
     <div class="toolbar" style="margin-top: 20px;">
-      <button class="btn" id="saveSettings">Save</button>
-      <button class="btn secondary" id="closeSettings">Cancel</button>
-      <button class="btn secondary" id="exportData">Export data</button>
+      <button class="btn" id="saveSettings" data-i18n="save">Save</button>
+      <button class="btn secondary" id="closeSettings" data-i18n="cancel">Cancel</button>
+      <button class="btn secondary" id="exportData" data-i18n="exportData">Export data</button>
     </div>
 
     <details style="margin-top: 16px;">
-      <summary style="cursor:pointer; color:#9d174d; font-size:13px;">Danger zone</summary>
+      <summary style="cursor:pointer; color:#9d174d; font-size:13px;" data-i18n="dangerZone">Danger zone</summary>
       <div style="padding-top: 10px;">
-        <button class="btn danger" id="wipeAll">Erase ALL data</button>
-        <div class="help">Removes every day on this device. Cannot be undone.</div>
+        <button class="btn danger" id="wipeAll" data-i18n="eraseAll">Erase ALL data</button>
+        <div class="help" data-i18n="eraseHelp">Removes every day on this device. Cannot be undone.</div>
       </div>
     </details>
   </div>
@@ -401,6 +405,201 @@
 const STORAGE_KEY = 'jessieJobBook_v2';
 const SETTINGS_KEY = 'jessieJobBook_settings_v1';
 
+// ============================================================
+// i18n — English / Chinese
+// ============================================================
+const I18N = {
+  en: {
+    appTitle: "Jessie's Job Book",
+    subtitle: "Snap a photo → review → done.",
+    tabDaily: "Daily", tabWeekly: "Weekly", tabMonthly: "Monthly",
+    saved: "Saved ✓",
+    snapPhoto: "📸 Snap a photo of today's sheet",
+    snapPhotoDesc: "Claude will read the numbers — you confirm",
+    enterManual: "Or enter manually →",
+    readingSheet: "Reading your sheet…",
+    tryAnother: "Try another photo",
+    enterManualBtn: "Enter manually",
+    reviewEdit: "Review & edit",
+    newPhoto: "📸 New photo",
+    colTime: "Time", colNote: "Note", colDeposit: "Deposit", colTip: "Tip", colRate: "Rate",
+    totalCommission: "Total Commission",
+    totalPending: "Total Pending Commission",
+    paidBtn: "Paid",
+    commissionPaid: "Commission Paid",
+    undo: "Undo",
+    legendRates: "<strong>30%</strong> = top-down rows. <strong>40%</strong> = bottom-up rows. Tap to toggle.",
+    clearDay: "Clear day",
+    todaysSummary: "Today's Summary",
+    weekSummary: "Week Summary",
+    monthSummary: "Month Summary",
+    statTip: "Tip",
+    statTakeHome: "Take-home",
+    statDaysWorked: "Days worked",
+    statWeekTakeHome: "Week take-home",
+    statMonthTakeHome: "Month take-home",
+    settings: "Settings",
+    oneTimeSetup: "One-time setup. Your API key stays on this phone.",
+    apiKeyLabel: "Anthropic API key",
+    apiKeyHelp: 'Get one at <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys. Each photo costs roughly $0.001 (less than a tenth of a cent).',
+    rate30Label: "Normal commission rate (%)",
+    rate40Label: "Bottom-up commission rate (%)",
+    sheetsUrlLabel: "Google Sheets sync URL",
+    sheetsUrlHelp: "Optional. If set, every saved day also goes to your spreadsheet.",
+    syncAllNow: "Sync all data now",
+    save: "Save", cancel: "Cancel", exportData: "Export data",
+    dangerZone: "Danger zone",
+    eraseAll: "Erase ALL data",
+    eraseHelp: "Removes every day on this device. Cannot be undone.",
+    confirmPaidTitle: "Are you sure you got paid?",
+    confirmPaidYes: "Yes, paid",
+    // dynamic
+    todayPrefix: "Today",
+    thisWeek: "This Week", pastWeek: "Past Week", futureWeek: "Future Week",
+    noMonthEntries: "No entries this month yet.",
+    custLabel: "cust", tipShort: "tip",
+    gotItOk: "Got it ✓ Please double-check below.",
+    notesPrefix: "Notes:",
+    couldNotRead: "Could not read the photo.",
+    apiKey401: "Your API key is invalid. Open Settings (⚙︎) and re-enter it.",
+    api429: "Too many requests — wait a moment and try again.",
+    networkError: "Network error: ",
+    visionCallFail: "Vision call failed: ",
+    noJsonResp: "No JSON found in response",
+    badJson: "Bad JSON: ",
+    noRows: "No rows in response",
+    invalidImage: "Invalid image data",
+    noCommToday: "No commission to mark paid for this day.",
+    noPending: "No pending commission to mark paid.",
+    pasteUrlFirst: "Paste your Google Sheets URL first.",
+    noDataToSync: "No data to sync.",
+    noSheetsUrl: "No Google Sheets URL set.",
+    syncing: "Syncing…", syncedOk: "Synced ✓", syncPendingShort: "Sync pending…",
+    allSynced: "All synced ✓",
+    pendingMsg: (n) => `${n} day(s) still pending`,
+    syncingNDays: (n) => `Syncing ${n} day(s)…`,
+    tipMismatch: (exp, sum) => `Heads up: the circled total says <strong>${exp}</strong>, but tips below add to <strong>${sum}</strong>. Verify the Tip column.`,
+    paidConfirm: (amt, n, date) => `$${amt} across ${n} day(s) through ${date} will be marked as paid today.`,
+    paidLabelFmt: (amt, date) => `${amt} on ${date}`,
+    confirmClearDay: (date) => `Clear all rows for ${date}?`,
+    confirmEraseAll: "Erase EVERY day on this device? This cannot be undone.",
+    confirmUndoPaid: (date) => `Undo the "paid" status for ${date}? Commission will go back to pending.`,
+    todayDateFmt: (date) => `Today · ${date}`,
+    locale: 'en-US',
+  },
+  zh: {
+    appTitle: "工作记录",
+    subtitle: "拍照 → 核对 → 完成",
+    tabDaily: "日", tabWeekly: "周", tabMonthly: "月",
+    saved: "已保存 ✓",
+    snapPhoto: "📸 拍下今天的记录单",
+    snapPhotoDesc: "AI 会读取数字 — 您只需确认",
+    enterManual: "或手动输入 →",
+    readingSheet: "正在读取…",
+    tryAnother: "重试照片",
+    enterManualBtn: "手动输入",
+    reviewEdit: "审核与编辑",
+    newPhoto: "📸 新照片",
+    colTime: "时间", colNote: "备注", colDeposit: "押金", colTip: "小费", colRate: "比例",
+    totalCommission: "总提成",
+    totalPending: "待付总提成",
+    paidBtn: "已付",
+    commissionPaid: "已付提成",
+    undo: "撤销",
+    legendRates: "<strong>30%</strong> = 从上到下。<strong>40%</strong> = 从下到上。点击切换。",
+    clearDay: "清空当天",
+    todaysSummary: "今日汇总",
+    weekSummary: "本周汇总",
+    monthSummary: "本月汇总",
+    statTip: "小费",
+    statTakeHome: "实得",
+    statDaysWorked: "工作天数",
+    statWeekTakeHome: "本周实得",
+    statMonthTakeHome: "本月实得",
+    settings: "设置",
+    oneTimeSetup: "一次性设置。您的 API 密钥仅保存在此手机。",
+    apiKeyLabel: "Anthropic API 密钥",
+    apiKeyHelp: '获取地址：<a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys。每张照片约 $0.001（不到一分钱）。',
+    rate30Label: "标准提成比例 (%)",
+    rate40Label: "从下到上比例 (%)",
+    sheetsUrlLabel: "Google Sheets 同步地址",
+    sheetsUrlHelp: "可选。设置后，每天的记录会自动同步至电子表格。",
+    syncAllNow: "立即同步所有数据",
+    save: "保存", cancel: "取消", exportData: "导出数据",
+    dangerZone: "危险操作",
+    eraseAll: "清除所有数据",
+    eraseHelp: "删除此设备上的所有记录。无法恢复。",
+    confirmPaidTitle: "确认已收到付款？",
+    confirmPaidYes: "是，已付款",
+    todayPrefix: "今天",
+    thisWeek: "本周", pastWeek: "上周", futureWeek: "未来",
+    noMonthEntries: "本月还没有记录。",
+    custLabel: "客", tipShort: "小费",
+    gotItOk: "已识别 ✓ 请核对以下信息。",
+    notesPrefix: "备注：",
+    couldNotRead: "无法读取照片。",
+    apiKey401: "API 密钥无效。请打开设置 (⚙︎) 重新输入。",
+    api429: "请求过多 — 请稍候再试。",
+    networkError: "网络错误：",
+    visionCallFail: "图像识别失败：",
+    noJsonResp: "响应中找不到 JSON",
+    badJson: "JSON 格式错误：",
+    noRows: "响应中没有行数据",
+    invalidImage: "无效的图像数据",
+    noCommToday: "当天没有提成可标记为已付。",
+    noPending: "没有待付提成可标记。",
+    pasteUrlFirst: "请先粘贴 Google Sheets 地址。",
+    noDataToSync: "没有数据可同步。",
+    noSheetsUrl: "未设置 Google Sheets 同步地址。",
+    syncing: "同步中…", syncedOk: "已同步 ✓", syncPendingShort: "待同步…",
+    allSynced: "全部已同步 ✓",
+    pendingMsg: (n) => `${n} 天待同步`,
+    syncingNDays: (n) => `正在同步 ${n} 天…`,
+    tipMismatch: (exp, sum) => `注意：圈出的总数为 <strong>${exp}</strong>，但读取的小费总和为 <strong>${sum}</strong>。请核实小费栏。`,
+    paidConfirm: (amt, n, date) => `$${amt}（共 ${n} 天，截至 ${date}）将标记为今天已付款。`,
+    paidLabelFmt: (amt, date) => `${amt} 于 ${date}`,
+    confirmClearDay: (date) => `确认清空 ${date} 的所有记录？`,
+    confirmEraseAll: "确认删除此设备上的所有记录？此操作无法撤销。",
+    confirmUndoPaid: (date) => `撤销 ${date} 的"已付"状态？提成将变回待付。`,
+    todayDateFmt: (date) => `今天 · ${date}`,
+    locale: 'zh-CN',
+  }
+};
+
+let currentLang = 'en';
+function t(key, ...args) {
+  const dict = I18N[currentLang] || I18N.en;
+  const v = dict[key];
+  if (typeof v === 'function') return v(...args);
+  if (v === undefined) return I18N.en[key] || key;
+  return v;
+}
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const str = t(key);
+    if (el.hasAttribute('data-i18n-html') || /<[a-z]/i.test(str)) {
+      el.innerHTML = str;
+    } else {
+      el.textContent = str;
+    }
+  });
+  // Update language toggle button to show the OTHER language
+  const btn = document.getElementById('langToggle');
+  if (btn) btn.textContent = currentLang === 'en' ? '中文' : 'EN';
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+}
+function setLanguage(lang) {
+  currentLang = (lang === 'zh') ? 'zh' : 'en';
+  const s = loadSettings();
+  saveSettings({ ...s, lang: currentLang });
+  applyTranslations();
+  // Re-render so dynamic strings update
+  if (currentView === 'daily') renderDay();
+  else if (currentView === 'weekly') renderWeek();
+  else if (currentView === 'monthly') renderMonth();
+}
+
 function loadSettings() {
   try {
     const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -409,8 +608,9 @@ function loadSettings() {
       rate30: typeof s.rate30 === 'number' ? s.rate30 : 30,
       rate40: typeof s.rate40 === 'number' ? s.rate40 : 40,
       sheetsUrl: s.sheetsUrl || '',
+      lang: s.lang === 'zh' ? 'zh' : 'en',
     };
-  } catch(e) { return { apiKey: '', rate30: 30, rate40: 40, sheetsUrl: '' }; }
+  } catch(e) { return { apiKey: '', rate30: 30, rate40: 40, sheetsUrl: '', lang: 'en' }; }
 }
 function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
@@ -520,14 +720,14 @@ async function flushSyncQueue() {
     while (loadSyncQueue().length > 0) {
       const queue = loadSyncQueue();
       const dateStr = queue[0];
-      setSyncBadge('syncing', 'Syncing…');
+      setSyncBadge('syncing', t('syncing'));
       try {
         await pushDayToSheet(url, dateStr);
         dequeueSync(dateStr);
-        setSyncBadge('ok', 'Synced ✓');
+        setSyncBadge('ok', t('syncedOk'));
       } catch (err) {
         console.warn('Sync failed for', dateStr, err);
-        setSyncBadge('err', 'Sync pending…');
+        setSyncBadge('err', t('syncPendingShort'));
         break; // stop on failure, will retry later
       }
     }
@@ -542,23 +742,23 @@ function setSyncBadge(state, text) {
   el.textContent = text;
   el.style.color = state==='ok' ? '#16a34a' : state==='err' ? '#dc2626' : '#9ca3af';
   if (state === 'ok') {
-    setTimeout(() => { if (el.textContent === 'Synced ✓') el.textContent = ''; }, 1500);
+    setTimeout(() => { if (el.textContent === t('syncedOk')) el.textContent = ''; }, 1500);
   }
 }
 
 async function syncAll() {
   const url = loadSettings().sheetsUrl;
-  if (!url) { alert('No Google Sheets URL set.'); return; }
+  if (!url) { alert(t('noSheetsUrl')); return; }
   const allDates = Object.keys(loadAll().days);
-  if (allDates.length === 0) { alert('No data to sync.'); return; }
+  if (allDates.length === 0) { alert(t('noDataToSync')); return; }
   // Queue everything
   const q = Array.from(new Set([...loadSyncQueue(), ...allDates]));
   saveSyncQueue(q);
   const statusEl = document.getElementById('syncStatus');
-  statusEl.textContent = 'Syncing ' + allDates.length + ' day(s)…';
+  statusEl.textContent = t('syncingNDays', allDates.length);
   await flushSyncQueue();
   const remaining = loadSyncQueue().length;
-  statusEl.textContent = remaining === 0 ? 'All synced ✓' : (remaining + ' day(s) still pending');
+  statusEl.textContent = remaining === 0 ? t('allSynced') : t('pendingMsg', remaining);
 }
 
 // Retry sync periodically if there's a queue
@@ -605,8 +805,8 @@ function calcDay(day) {
 // ============================================================
 function $$(s) { return '$' + Math.floor(Number(s) || 0).toLocaleString(); }
 function todayStr() { const d = new Date(); return d.toISOString().slice(0,10); }
-function fmtDate(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }); }
-function dowShort(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(undefined, { weekday:'short' }); }
+function fmtDate(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(t('locale'), { weekday:'short', month:'short', day:'numeric' }); }
+function dowShort(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(t('locale'), { weekday:'short' }); }
 function addDays(dateStr, n) { const d = new Date(dateStr + 'T00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
 function startOfWeek(dateStr) { const d = new Date(dateStr + 'T00:00'); d.setDate(d.getDate() - d.getDay()); return d.toISOString().slice(0,10); }
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -657,7 +857,7 @@ function showState(state) {
 
 function renderDay() {
   dayPicker.value = currentDate;
-  dayLabel.textContent = currentDate === todayStr() ? 'Today · ' + fmtDate(currentDate) : fmtDate(currentDate);
+  dayLabel.textContent = currentDate === todayStr() ? t('todayDateFmt', fmtDate(currentDate)) : fmtDate(currentDate);
   if (dayHasData(currentDate)) {
     populateRows(getDay(currentDate).rows);
     showState('manual');
@@ -769,7 +969,7 @@ function updateDaySummary() {
     }
     if (s.paid) {
       paidDisplay.style.display = '';
-      document.getElementById('paidLabel').textContent = $$(s.paidCommission) + ' on ' + fmtDate(s.paidDate);
+      document.getElementById('paidLabel').textContent = t('paidLabelFmt', $$(s.paidCommission), fmtDate(s.paidDate));
     } else {
       paidDisplay.style.display = 'none';
     }
@@ -790,7 +990,7 @@ dayPicker.addEventListener('change', () => {
 });
 
 document.getElementById('clearDay').addEventListener('click', () => {
-  if (!confirm('Clear all rows for ' + fmtDate(currentDate) + '?')) return;
+  if (!confirm(t('confirmClearDay', fmtDate(currentDate)))) return;
   const data = loadAll(); delete data.days[currentDate]; saveAll(data);
   renderDay();
 });
@@ -844,7 +1044,7 @@ photoInput.addEventListener('change', async (e) => {
     applyExtractedResult(result);
   } catch (err) {
     console.error(err);
-    errorMsg.innerHTML = '<strong>Could not read the photo.</strong><br/>' + escapeHtml(err.message || String(err));
+    errorMsg.innerHTML = '<strong>' + t('couldNotRead') + '</strong><br/>' + escapeHtml(err.message || String(err));
     showState('error');
   }
 });
@@ -880,7 +1080,7 @@ function resizeImage(dataUrl, maxDim) {
 async function extractFromPhoto(dataUrl, apiKey) {
   // dataUrl looks like "data:image/jpeg;base64,XXXX..."
   const match = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
-  if (!match) throw new Error('Invalid image data');
+  if (!match) throw new Error(t('invalidImage'));
   const mediaType = match[1];
   const base64Data = match[2];
 
@@ -972,14 +1172,14 @@ RULES
       body: JSON.stringify(body),
     });
   } catch (err) {
-    throw new Error('Network error: ' + err.message);
+    throw new Error(t('networkError') + err.message);
   }
 
   if (!resp.ok) {
     let detail = '';
     try { const j = await resp.json(); detail = j.error?.message || JSON.stringify(j); } catch(e) { detail = await resp.text(); }
-    if (resp.status === 401) throw new Error('Your API key is invalid. Open Settings (⚙︎) and re-enter it.');
-    if (resp.status === 429) throw new Error('Too many requests — wait a moment and try again.');
+    if (resp.status === 401) throw new Error(t('apiKey401'));
+    if (resp.status === 429) throw new Error(t('api429'));
     throw new Error('API ' + resp.status + ': ' + detail);
   }
 
@@ -1025,15 +1225,15 @@ function applyExtractedResult(result) {
   setDay(currentDate, { rows, paidDate: existingPaidDate });
   const notice = document.getElementById('extractNotice');
   const extractedTipSum = rows.reduce((acc, r) => acc + num(r.tip), 0);
-  let html = '<div class="notice ok">Got it ✓ Please double-check below.</div>';
+  let html = `<div class="notice ok">${t('gotItOk')}</div>`;
   if (result.expected_tip_total != null) {
     const expected = Number(result.expected_tip_total);
     if (Math.abs(expected - extractedTipSum) >= 0.5) {
-      html = `<div class="notice">Heads up: the circled total says <strong>${expected}</strong>, but tips below add to <strong>${extractedTipSum}</strong>. Verify the Tip column.</div>` + html;
+      html = `<div class="notice">${t('tipMismatch', expected, extractedTipSum)}</div>` + html;
     }
   }
-  if (result.notes) html += `<div class="notice"><strong>Notes:</strong> ${escapeHtml(result.notes)}</div>`;
-  dayLabel.textContent = currentDate === todayStr() ? 'Today · ' + fmtDate(currentDate) : fmtDate(currentDate);
+  if (result.notes) html += `<div class="notice"><strong>${t('notesPrefix')}</strong> ${escapeHtml(result.notes)}</div>`;
+  dayLabel.textContent = currentDate === todayStr() ? t('todayDateFmt', fmtDate(currentDate)) : fmtDate(currentDate);
   notice.innerHTML = html;
   updateDaySummary();
 }
@@ -1045,8 +1245,8 @@ function renderWeek() {
   const weekStart = currentWeekStart;
   const weekEnd = addDays(weekStart, 6);
   document.getElementById('weekLabel').textContent =
-    (weekStart <= todayStr() && weekEnd >= todayStr()) ? 'This Week' :
-    (weekEnd < todayStr() ? 'Past Week' : 'Future Week');
+    (weekStart <= todayStr() && weekEnd >= todayStr()) ? t('thisWeek') :
+    (weekEnd < todayStr() ? t('pastWeek') : t('futureWeek'));
   document.getElementById('weekRange').textContent = fmtDate(weekStart) + ' – ' + fmtDate(weekEnd);
 
   const list = document.getElementById('weekList');
@@ -1065,8 +1265,8 @@ function renderWeek() {
     li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
     li.innerHTML = `
       <div><div class="dow">${dowShort(d)}</div><div class="date">${fmtDate(d)}</div></div>
-      <div class="mini">${s.count} cust</div>
-      <div class="mini">tip ${$$(s.tip)}</div>
+      <div class="mini">${s.count} ${t('custLabel')}</div>
+      <div class="mini">${t('tipShort')} ${$$(s.tip)}</div>
       <div class="num">${$$(s.takeHome)}</div>
     `;
     li.addEventListener('click', () => {
@@ -1100,233 +1300,4 @@ function renderMonth() {
   list.innerHTML = '';
   let mFee=0, mDep=0, mTip=0, mComm=0, mTake=0, mCount=0, mDays=0, mC40=0, mPending=0;
   let mFee30=0, mFee40=0;
-  for (let i=1; i<=lastDay; i++) {
-    const d = `${y}-${String(m).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-    const day = getDay(d);
-    const s = calcDay(day);
-    if (s.count > 0) {
-      mDays++;
-      mFee += s.fee; mDep += s.deposit; mTip += s.tip; mComm += s.commission; mTake += s.takeHome; mCount += s.count; mC40 += s.c40;
-      mFee30 += s.fee30; mFee40 += s.fee40;
-      mPending += s.pending;
-      const li = document.createElement('li');
-      li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
-      li.innerHTML = `
-        <div><div class="dow">${dowShort(d)}</div><div class="date">${fmtDate(d)}</div></div>
-        <div class="mini">${s.count} cust</div>
-        <div class="mini">tip ${$$(s.tip)}</div>
-        <div class="num">${$$(s.takeHome)}</div>
-      `;
-      li.addEventListener('click', () => {
-        currentDate = d; document.querySelector('.tab[data-view="daily"]').click(); renderDay();
-      });
-      list.appendChild(li);
-    }
-  }
-  if (mDays === 0) list.innerHTML = '<div class="empty">No entries this month yet.</div>';
-  document.getElementById('mDays').textContent = mDays;
-  document.getElementById('m30Fee').textContent = $$(mFee30);
-  document.getElementById('m40Fee').textContent = $$(mFee40);
-  document.getElementById('mTip').textContent = $$(mTip);
-  document.getElementById('mComm').textContent = $$(mComm);
-  document.getElementById('mTakeHome').textContent = $$(mTake);
-  const [my, mm] = currentMonth.split('-').map(Number);
-  const monthLastDay = new Date(my, mm, 0).getDate();
-  const monthEnd = `${my}-${String(mm).padStart(2,'0')}-${String(monthLastDay).padStart(2,'0')}`;
-  const { total: cumPendingM } = getCumulativePending(monthEnd);
-  document.getElementById('mPending').textContent = $$(cumPendingM);
-  document.getElementById('mPendingRow').style.display = cumPendingM > 0 ? '' : 'none';
-}
-function shiftMonth(delta) {
-  const [y, m] = currentMonth.split('-').map(Number);
-  const d = new Date(y, m-1+delta, 1);
-  currentMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  renderMonth();
-}
-document.getElementById('monthPrev').addEventListener('click', () => shiftMonth(-1));
-document.getElementById('monthNext').addEventListener('click', () => shiftMonth(1));
-monthPicker.addEventListener('change', () => { currentMonth = monthPicker.value; renderMonth(); });
-
-// ============================================================
-// Settings modal
-// ============================================================
-const settingsModal = document.getElementById('settingsModal');
-const apiKeyInput = document.getElementById('apiKeyInput');
-const rate30Input = document.getElementById('rate30Input');
-const rate40Input = document.getElementById('rate40Input');
-const sheetsUrlInput = document.getElementById('sheetsUrlInput');
-
-function openSettingsModal() {
-  const s = loadSettings();
-  apiKeyInput.value = s.apiKey;
-  rate30Input.value = s.rate30;
-  rate40Input.value = s.rate40;
-  sheetsUrlInput.value = s.sheetsUrl;
-  document.getElementById('syncStatus').textContent = '';
-  settingsModal.classList.add('show');
-}
-document.getElementById('openSettings').addEventListener('click', openSettingsModal);
-document.getElementById('closeSettings').addEventListener('click', () => settingsModal.classList.remove('show'));
-document.getElementById('saveSettings').addEventListener('click', () => {
-  const s = {
-    apiKey: apiKeyInput.value.trim(),
-    rate30: parseFloat(rate30Input.value) || 30,
-    rate40: parseFloat(rate40Input.value) || 40,
-    sheetsUrl: sheetsUrlInput.value.trim(),
-  };
-  saveSettings(s);
-  settingsModal.classList.remove('show');
-  renderDay();
-  if (s.sheetsUrl) scheduleSyncFlush();
-});
-document.getElementById('syncNowBtn').addEventListener('click', async () => {
-  // Save current URL first
-  const url = sheetsUrlInput.value.trim();
-  if (!url) { alert('Paste your Google Sheets URL first.'); return; }
-  const s = loadSettings();
-  saveSettings({ ...s, sheetsUrl: url });
-  await syncAll();
-});
-document.getElementById('exportData').addEventListener('click', () => {
-  const data = loadAll();
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'jessie-job-book-' + todayStr() + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-document.getElementById('wipeAll').addEventListener('click', () => {
-  if (!confirm('Erase EVERY day on this device? This cannot be undone.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  settingsModal.classList.remove('show');
-  renderDay();
-});
-// Tap outside the modal closes it
-settingsModal.addEventListener('click', (e) => {
-  if (e.target === settingsModal) settingsModal.classList.remove('show');
-});
-
-// ============================================================
-// Mark Paid (commission payout)
-// ============================================================
-const confirmModal = document.getElementById('confirmModal');
-const confirmDetail = document.getElementById('confirmDetail');
-let pendingConfirmAction = null;
-
-function showConfirm(detailText, onConfirm) {
-  confirmDetail.textContent = detailText;
-  pendingConfirmAction = onConfirm;
-  confirmModal.classList.add('show');
-}
-document.getElementById('confirmCancel').addEventListener('click', () => {
-  confirmModal.classList.remove('show');
-  pendingConfirmAction = null;
-});
-document.getElementById('confirmYes').addEventListener('click', () => {
-  confirmModal.classList.remove('show');
-  if (pendingConfirmAction) pendingConfirmAction();
-  pendingConfirmAction = null;
-});
-confirmModal.addEventListener('click', (e) => {
-  if (e.target === confirmModal) { confirmModal.classList.remove('show'); pendingConfirmAction = null; }
-});
-
-// Cumulative pending: all unpaid commission through the given as-of date (inclusive).
-// Optionally supply an in-progress day override so the running total reflects unsaved edits.
-function getCumulativePending(asOfDateStr, overrideForDate, overrideDay) {
-  const data = loadAll();
-  let total = 0;
-  let dayCount = 0;
-  for (const [dateStr, dayData] of Object.entries(data.days)) {
-    if (dateStr > asOfDateStr) continue;                       // skip days after the as-of date
-    if (overrideForDate && dateStr === overrideForDate) continue; // handled via override
-    if (dayData.paidDate) continue;
-    const s = calcDay({ rows: dayData.rows, paidDate: null });
-    if (s.commission > 0) { total += s.commission; dayCount++; }
-  }
-  // Apply in-progress override (for Daily view while editing)
-  if (overrideForDate && overrideForDate <= asOfDateStr && overrideDay && !overrideDay.paidDate) {
-    const s = calcDay({ rows: overrideDay.rows, paidDate: null });
-    if (s.commission > 0) { total += s.commission; dayCount++; }
-  }
-  return { total, dayCount };
-}
-
-function markPendingPaidThrough(asOfDateStr) {
-  const today = todayStr();
-  const data = loadAll();
-  const datesToMark = [];
-  for (const [dateStr, dayData] of Object.entries(data.days)) {
-    if (dateStr > asOfDateStr) continue;
-    if (dayData.paidDate) continue;
-    const s = calcDay({ rows: dayData.rows, paidDate: null });
-    if (s.commission > 0) datesToMark.push(dateStr);
-  }
-  for (const date of datesToMark) {
-    setDayPaidDate(date, today);
-  }
-}
-
-// Shared Paid-button handler (used on Daily/Weekly/Monthly).
-// asOfDateStr = the latest date covered by the current view.
-function triggerPaidConfirm(asOfDateStr, onAfter) {
-  // Make sure any in-progress edits are saved first
-  if (currentView === 'daily' && rowsCard.style.display !== 'none') {
-    setDay(currentDate, readRowsFromDOM());
-  }
-  const { total, dayCount } = getCumulativePending(asOfDateStr);
-  if (total <= 0) { alert('No pending commission to mark paid.'); return; }
-  showConfirm(`$${Math.floor(total).toLocaleString()} across ${dayCount} day(s) through ${fmtDate(asOfDateStr)} will be marked as paid today.`, () => {
-    markPendingPaidThrough(asOfDateStr);
-    onAfter();
-  });
-}
-
-// Daily — Paid button (marks all unpaid days through the viewed date)
-document.getElementById('markPaidBtn').addEventListener('click', () => {
-  triggerPaidConfirm(currentDate, () => renderDay());
-});
-
-// Daily — Undo (only undoes the currently-viewed day's paid status)
-document.getElementById('undoPaidBtn').addEventListener('click', () => {
-  showConfirm(`Undo the "paid" status for ${fmtDate(currentDate)}? Commission will go back to pending.`, () => {
-    setDayPaidDate(currentDate, null);
-    renderDay();
-  });
-});
-
-// Weekly — Paid button (marks all unpaid days through end of the week)
-document.getElementById('wMarkPaidBtn').addEventListener('click', () => {
-  const weekEnd = addDays(currentWeekStart, 6);
-  triggerPaidConfirm(weekEnd, () => renderWeek());
-});
-
-// Monthly — Paid button (marks all unpaid days through end of the month)
-document.getElementById('mMarkPaidBtn').addEventListener('click', () => {
-  const [y, m] = currentMonth.split('-').map(Number);
-  const lastDay = new Date(y, m, 0).getDate();
-  const monthEnd = `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
-  triggerPaidConfirm(monthEnd, () => renderMonth());
-});
-
-// ============================================================
-// Boot
-// ============================================================
-renderDay();
-window.addEventListener('beforeunload', () => {
-  if (currentView === 'daily' && rowsCard.style.display !== 'none') setDay(currentDate, readRowsFromDOM());
-});
-
-// Prompt for API key on first launch
-if (!loadSettings().apiKey) {
-  setTimeout(() => {
-    if (!loadSettings().apiKey) openSettingsModal();
-  }, 600);
-}
-</script>
-
-</body>
-</html>
+  for (let

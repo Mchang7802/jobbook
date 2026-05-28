@@ -63,7 +63,35 @@
   .rate-toggle { display: inline-flex; border-radius: 7px; overflow: hidden; border: 1px solid #f9a8d4; }
   .rate-toggle button { border: none; background: #fff; color: #9d174d; padding: 8px 8px; font-size: 11px; font-weight: 700; cursor: pointer; min-width: 38px; min-height: 38px; }
   .rate-toggle button.active { background: #be185d; color: #fff; }
-  .col-time { width: 17%; } .col-cust { width: 21%; } .col-dep { width: 14%; } .col-fee { width: 17%; } .col-tip { width: 14%; } .col-rate { width: 14%; }
+  .col-time { width: 13%; } .col-cust { width: 14%; } .col-note { width: 18%; } .col-dep { width: 12%; } .col-fee { width: 14%; } .col-tip { width: 12%; } .col-rate { width: 14%; }
+
+  /* Table footer (Subtotal / 大费 / Tip cells under the rows) */
+  .table-footer { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .foot-cell { background: #fff7fb; border: 1px solid #fce7f3; border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .foot-cell .foot-label { font-size: 11px; color: #9d174d; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px; }
+  .foot-cell .foot-value { font-size: 16px; color: #1f2937; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .total-comm-row { margin-top: 10px; }
+  .total-comm-row .foot-cell { background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-color: #f9a8d4; }
+  .total-comm-row .foot-value { font-size: 18px; color: #be185d; }
+
+  /* Pending commission section */
+  .pending-row { margin-top: 10px; display: flex; gap: 10px; align-items: stretch; }
+  .pending-row .foot-cell { flex: 1; background: #fef3c7; border-color: #fde68a; }
+  .pending-row .foot-cell .foot-label { color: #92400e; }
+  .pending-row .foot-cell .foot-value { color: #b45309; font-size: 18px; }
+  .pending-row .paid-btn {
+    background: #16a34a; color: #fff; border: none; padding: 0 22px; border-radius: 10px;
+    font-size: 15px; font-weight: 700; cursor: pointer; min-width: 90px;
+  }
+  .pending-row .paid-btn:active { transform: scale(0.97); }
+  .paid-display { margin-top: 10px; display: flex; gap: 10px; align-items: stretch; }
+  .paid-display .foot-cell { flex: 1; background: #dcfce7; border-color: #bbf7d0; }
+  .paid-display .foot-cell .foot-label { color: #166534; }
+  .paid-display .foot-cell .foot-value { color: #15803d; font-size: 14px; font-weight: 600; }
+  .paid-display .undo-btn {
+    background: #fff; color: #6b7280; border: 1px solid #e5e7eb; padding: 0 16px; border-radius: 10px;
+    font-size: 13px; cursor: pointer;
+  }
 
   /* Summary */
   .summary { background: linear-gradient(135deg, #fdf2f8, #fce7f3); border-radius: 14px; padding: 14px; }
@@ -128,7 +156,7 @@
     th { font-size: 10px; padding: 4px 2px; }
     td input { padding: 7px 4px; font-size: 14px; }
     .rate-toggle button { padding: 7px 5px; font-size: 11px; min-width: 32px; }
-    .col-time { width: 18%; } .col-cust { width: 19%; } .col-dep { width: 13%; } .col-fee { width: 17%; } .col-tip { width: 14%; } .col-rate { width: 16%; }
+    .col-time { width: 14%; } .col-cust { width: 13%; } .col-note { width: 17%; } .col-dep { width: 12%; } .col-fee { width: 14%; } .col-tip { width: 13%; } .col-rate { width: 14%; }
   }
 </style>
 </head>
@@ -206,6 +234,7 @@
           <th>#</th>
           <th class="col-time">Time</th>
           <th class="col-cust">客名</th>
+          <th class="col-note">Note</th>
           <th class="col-dep">Deposit</th>
           <th class="col-fee">大费</th>
           <th class="col-tip">Tip</th>
@@ -214,6 +243,25 @@
       </thead>
       <tbody id="rowsBody"></tbody>
     </table>
+
+    <div class="table-footer">
+      <div class="foot-cell"><div class="foot-label">30% 大费</div><div class="foot-value" id="foot30Fee">$0</div></div>
+      <div class="foot-cell"><div class="foot-label">40% 大费</div><div class="foot-value" id="foot40Fee">$0</div></div>
+      <div class="foot-cell"><div class="foot-label">Tip</div><div class="foot-value" id="footTip">$0</div></div>
+    </div>
+    <div class="total-comm-row">
+      <div class="foot-cell"><div class="foot-label">Total Commission</div><div class="foot-value" id="footCommission">$0</div></div>
+    </div>
+
+    <div class="pending-row" id="pendingRow">
+      <div class="foot-cell"><div class="foot-label">Total Pending Commission</div><div class="foot-value" id="footPending">$0</div></div>
+      <button class="paid-btn" id="markPaidBtn">Paid</button>
+    </div>
+    <div class="paid-display" id="paidDisplay" style="display:none;">
+      <div class="foot-cell"><div class="foot-label">Commission Paid</div><div class="foot-value" id="paidLabel">$0 on —</div></div>
+      <button class="undo-btn" id="undoPaidBtn">Undo</button>
+    </div>
+
     <div class="legend">
       <strong>30%</strong> = top-down rows. <strong>40%</strong> = bottom-up rows. Tap to toggle.
     </div>
@@ -225,14 +273,10 @@
   <div class="summary card" id="summaryCard">
     <h3>Today's Summary</h3>
     <div class="stat-grid">
-      <div class="stat"><span class="lbl">Customers</span><span class="val" id="sCount">0</span></div>
-      <div class="stat"><span class="lbl">大费 total</span><span class="val" id="sFee">$0</span></div>
-      <div class="stat"><span class="lbl">Deposit total</span><span class="val" id="sDep">$0</span></div>
-      <div class="stat"><span class="lbl">Tips total</span><span class="val" id="sTip">$0</span></div>
-      <div class="stat"><span class="lbl">Commission base</span><span class="val" id="sBase">$0</span></div>
-      <div class="stat"><span class="lbl">Commission</span><span class="val" id="sComm">$0</span></div>
-      <div class="stat"><span class="lbl">30% rows</span><span class="val" id="sCount30">0</span></div>
-      <div class="stat"><span class="lbl">40% rows</span><span class="val" id="sCount40">0</span></div>
+      <div class="stat"><span class="lbl">30% 大费</span><span class="val" id="s30Fee">$0</span></div>
+      <div class="stat"><span class="lbl">40% 大费</span><span class="val" id="s40Fee">$0</span></div>
+      <div class="stat"><span class="lbl">Tip</span><span class="val" id="sTip">$0</span></div>
+      <div class="stat"><span class="lbl">Total Commission</span><span class="val" id="sComm">$0</span></div>
       <div class="stat big"><span class="lbl">Take-home</span><span class="val" id="sTakeHome">$0</span></div>
     </div>
   </div>
@@ -255,13 +299,15 @@
     <h3>Week Summary</h3>
     <div class="stat-grid">
       <div class="stat"><span class="lbl">Days worked</span><span class="val" id="wDays">0</span></div>
-      <div class="stat"><span class="lbl">Customers</span><span class="val" id="wCount">0</span></div>
-      <div class="stat"><span class="lbl">大费 total</span><span class="val" id="wFee">$0</span></div>
-      <div class="stat"><span class="lbl">Deposit total</span><span class="val" id="wDep">$0</span></div>
-      <div class="stat"><span class="lbl">Tips total</span><span class="val" id="wTip">$0</span></div>
-      <div class="stat"><span class="lbl">Commission</span><span class="val" id="wComm">$0</span></div>
-      <div class="stat"><span class="lbl">40% rows</span><span class="val" id="wCount40">0</span></div>
+      <div class="stat"><span class="lbl">30% 大费</span><span class="val" id="w30Fee">$0</span></div>
+      <div class="stat"><span class="lbl">40% 大费</span><span class="val" id="w40Fee">$0</span></div>
+      <div class="stat"><span class="lbl">Tip</span><span class="val" id="wTip">$0</span></div>
+      <div class="stat"><span class="lbl">Total Commission</span><span class="val" id="wComm">$0</span></div>
       <div class="stat big"><span class="lbl">Week take-home</span><span class="val" id="wTakeHome">$0</span></div>
+    </div>
+    <div class="pending-row" id="wPendingRow" style="margin-top: 14px;">
+      <div class="foot-cell"><div class="foot-label">Total Pending Commission</div><div class="foot-value" id="wPending">$0</div></div>
+      <button class="paid-btn" id="wMarkPaidBtn">Paid</button>
     </div>
   </div>
 </div>
@@ -280,13 +326,27 @@
     <h3>Month Summary</h3>
     <div class="stat-grid">
       <div class="stat"><span class="lbl">Days worked</span><span class="val" id="mDays">0</span></div>
-      <div class="stat"><span class="lbl">Customers</span><span class="val" id="mCount">0</span></div>
-      <div class="stat"><span class="lbl">大费 total</span><span class="val" id="mFee">$0</span></div>
-      <div class="stat"><span class="lbl">Deposit total</span><span class="val" id="mDep">$0</span></div>
-      <div class="stat"><span class="lbl">Tips total</span><span class="val" id="mTip">$0</span></div>
-      <div class="stat"><span class="lbl">Commission</span><span class="val" id="mComm">$0</span></div>
-      <div class="stat"><span class="lbl">40% rows</span><span class="val" id="mCount40">0</span></div>
+      <div class="stat"><span class="lbl">30% 大费</span><span class="val" id="m30Fee">$0</span></div>
+      <div class="stat"><span class="lbl">40% 大费</span><span class="val" id="m40Fee">$0</span></div>
+      <div class="stat"><span class="lbl">Tip</span><span class="val" id="mTip">$0</span></div>
+      <div class="stat"><span class="lbl">Total Commission</span><span class="val" id="mComm">$0</span></div>
       <div class="stat big"><span class="lbl">Month take-home</span><span class="val" id="mTakeHome">$0</span></div>
+    </div>
+    <div class="pending-row" id="mPendingRow" style="margin-top: 14px;">
+      <div class="foot-cell"><div class="foot-label">Total Pending Commission</div><div class="foot-value" id="mPending">$0</div></div>
+      <button class="paid-btn" id="mMarkPaidBtn">Paid</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONFIRM PAID MODAL ===== -->
+<div class="modal-bg" id="confirmModal">
+  <div class="modal">
+    <h2>Are you sure you got paid?</h2>
+    <p id="confirmDetail" class="help" style="font-size:14px; color:#1f2937; margin-top:8px;"></p>
+    <div class="toolbar" style="margin-top: 20px; justify-content: flex-end;">
+      <button class="btn secondary" id="confirmCancel">Cancel</button>
+      <button class="btn" id="confirmYes" style="background:#16a34a;">Yes, paid</button>
     </div>
   </div>
 </div>
@@ -379,25 +439,34 @@ function loadAll() {
   } catch(e) { return { days: {} }; }
 }
 function saveAll(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-function emptyRow() { return { time: '', customer: '', deposit: '', fee: '', tip: '', rate: 30 }; }
-function emptyDay() { return { rows: Array.from({length:10}, emptyRow) }; }
+function emptyRow() { return { time: '', customer: '', note: '', deposit: '', fee: '', tip: '', rate: 30 }; }
+function emptyDay() { return { rows: Array.from({length:10}, emptyRow), paidDate: null }; }
 function getDay(dateStr) {
   const data = loadAll();
   if (!data.days[dateStr]) return emptyDay();
-  const rows = data.days[dateStr].rows.slice(0, 10);
+  const stored = data.days[dateStr];
+  const rows = stored.rows.slice(0, 10);
   while (rows.length < 10) rows.push(emptyRow());
-  return { rows };
+  return { rows, paidDate: stored.paidDate || null };
 }
 function dayHasData(dateStr) { return !!loadAll().days[dateStr]; }
 function setDay(dateStr, day) {
   const data = loadAll();
-  const hasContent = day.rows.some(r => r.time || r.customer || r.deposit || r.fee || r.tip);
-  if (!hasContent) delete data.days[dateStr];
-  else data.days[dateStr] = day;
+  const hasContent = day.rows.some(r => r.time || r.customer || r.note || r.deposit || r.fee || r.tip);
+  if (!hasContent && !day.paidDate) {
+    delete data.days[dateStr];
+  } else {
+    data.days[dateStr] = { rows: day.rows, paidDate: day.paidDate || null };
+  }
   saveAll(data);
   // Queue for sync
   enqueueSync(dateStr);
   scheduleSyncFlush();
+}
+function setDayPaidDate(dateStr, paidDate) {
+  const day = getDay(dateStr);
+  day.paidDate = paidDate;
+  setDay(dateStr, day);
 }
 
 // ============================================================
@@ -416,10 +485,12 @@ async function pushDayToSheet(url, dateStr) {
   const settings = loadSettings();
   const payload = {
     date: dateStr,
+    paidDate: day.paidDate || null,
     rows: day.rows.map((r, i) => ({
       row: i + 1,
       time: r.time || '',
       customer: r.customer || '',
+      note: r.note || '',
       deposit: r.deposit === '' ? null : Number(r.deposit),
       fee: r.fee === '' ? null : Number(r.fee),
       tip: r.tip === '' ? null : Number(r.tip),
@@ -502,6 +573,7 @@ function num(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
 function calcDay(day) {
   const settings = loadSettings();
   let fee=0, tip=0, dep=0, comm=0, count=0, c30=0, c40=0;
+  let fee30=0, fee40=0;
   for (const r of day.rows) {
     const hasContent = r.time || r.customer || r.fee || r.tip || r.deposit;
     if (!hasContent) continue;
@@ -511,15 +583,27 @@ function calcDay(day) {
     const ratePct = r.rate === 40 ? settings.rate40 : settings.rate30;
     // Commission base = deposit + fee (deposit is upfront portion of the service price)
     comm += (f + d) * (ratePct/100);
-    if (r.rate === 40) c40++; else c30++;
+    // 30%/40% 大费 includes the deposit for that row (it's the commission base)
+    if (r.rate === 40) { c40++; fee40 += f + d; }
+    else { c30++; fee30 += f + d; }
   }
-  return { fee, tip, deposit: dep, base: fee+dep, commission: comm, takeHome: comm + tip, count, c30, c40 };
+  const paid = !!day.paidDate;
+  return {
+    fee, tip, deposit: dep, base: fee+dep,
+    fee30, fee40,
+    commission: comm,
+    pending: paid ? 0 : comm,
+    paidCommission: paid ? comm : 0,
+    paid, paidDate: day.paidDate || null,
+    takeHome: comm + tip,
+    count, c30, c40
+  };
 }
 
 // ============================================================
 // Format helpers
 // ============================================================
-function $$(s) { return '$' + (Math.round(s*100)/100).toFixed(2); }
+function $$(s) { return '$' + Math.floor(Number(s) || 0).toLocaleString(); }
 function todayStr() { const d = new Date(); return d.toISOString().slice(0,10); }
 function fmtDate(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }); }
 function dowShort(dateStr) { const d = new Date(dateStr + 'T00:00'); return d.toLocaleDateString(undefined, { weekday:'short' }); }
@@ -593,6 +677,7 @@ function populateRows(rows) {
       <td class="row-num">${i+1}</td>
       <td><input data-i="${i}" data-f="time" type="text" inputmode="numeric" value="${escapeHtml(r.time)}" placeholder="11:30" /></td>
       <td><input data-i="${i}" data-f="customer" type="text" value="${escapeHtml(r.customer)}" placeholder="" /></td>
+      <td><input data-i="${i}" data-f="note" type="text" value="${escapeHtml(r.note)}" placeholder="📝 note" /></td>
       <td><input data-i="${i}" data-f="deposit" type="number" inputmode="decimal" class="num" value="${escapeAttr(r.deposit)}" placeholder="0" /></td>
       <td><input data-i="${i}" data-f="fee" type="number" inputmode="decimal" class="num" value="${escapeAttr(r.fee)}" placeholder="0" /></td>
       <td><input data-i="${i}" data-f="tip" type="number" inputmode="decimal" class="num" value="${escapeAttr(r.tip)}" placeholder="0" /></td>
@@ -619,7 +704,8 @@ function readRowsFromDOM() {
     const i = +btn.dataset.i, rate = +btn.dataset.rate;
     rows[i].rate = rate;
   });
-  return { rows };
+  // Preserve the stored paidDate so navigation/auto-save doesn't wipe paid status
+  return { rows, paidDate: getDay(currentDate).paidDate || null };
 }
 
 function onCellChange() { scheduleSave(); updateDaySummary(); }
@@ -642,20 +728,52 @@ function scheduleSave() {
 function updateDaySummary() {
   let day;
   if (rowsCard.style.display !== 'none' && rowsBody.children.length > 0) {
+    // While editing, get rows from DOM but read paidDate from storage
     day = readRowsFromDOM();
+    day.paidDate = getDay(currentDate).paidDate;
   } else {
     day = getDay(currentDate);
   }
   const s = calcDay(day);
-  document.getElementById('sCount').textContent = s.count;
-  document.getElementById('sFee').textContent = $$(s.fee);
-  document.getElementById('sDep').textContent = $$(s.deposit);
-  document.getElementById('sBase').textContent = $$(s.base);
+
+  // Simplified Today's Summary card
+  document.getElementById('s30Fee').textContent = $$(s.fee30);
+  document.getElementById('s40Fee').textContent = $$(s.fee40);
   document.getElementById('sTip').textContent = $$(s.tip);
   document.getElementById('sComm').textContent = $$(s.commission);
-  document.getElementById('sCount30').textContent = s.c30;
-  document.getElementById('sCount40').textContent = s.c40;
   document.getElementById('sTakeHome').textContent = $$(s.takeHome);
+
+  // Table footer
+  const foot30 = document.getElementById('foot30Fee');
+  const foot40 = document.getElementById('foot40Fee');
+  const footTip = document.getElementById('footTip');
+  const footComm = document.getElementById('footCommission');
+  if (foot30) {
+    foot30.textContent = $$(s.fee30);
+    foot40.textContent = $$(s.fee40);
+    footTip.textContent = $$(s.tip);
+    footComm.textContent = $$(s.commission);
+  }
+
+  // Yellow row: cumulative pending through the viewed date (uses in-progress edits for today)
+  // Green row: only shows if the currently-viewed day itself has been paid
+  const pendingRow = document.getElementById('pendingRow');
+  const paidDisplay = document.getElementById('paidDisplay');
+  if (pendingRow && paidDisplay) {
+    const { total: cumPending } = getCumulativePending(currentDate, currentDate, day);
+    if (cumPending > 0) {
+      pendingRow.style.display = '';
+      document.getElementById('footPending').textContent = $$(cumPending);
+    } else {
+      pendingRow.style.display = 'none';
+    }
+    if (s.paid) {
+      paidDisplay.style.display = '';
+      document.getElementById('paidLabel').textContent = $$(s.paidCommission) + ' on ' + fmtDate(s.paidDate);
+    } else {
+      paidDisplay.style.display = 'none';
+    }
+  }
 }
 
 document.getElementById('dayPrev').addEventListener('click', () => {
@@ -902,7 +1020,9 @@ function applyExtractedResult(result) {
   }
   populateRows(rows);
   showState('review');
-  setDay(currentDate, { rows });
+  // Preserve any existing paidDate for this day so re-photographing doesn't wipe paid status
+  const existingPaidDate = getDay(currentDate).paidDate || null;
+  setDay(currentDate, { rows, paidDate: existingPaidDate });
   const notice = document.getElementById('extractNotice');
   const extractedTipSum = rows.reduce((acc, r) => acc + num(r.tip), 0);
   let html = '<div class="notice ok">Got it ✓ Please double-check below.</div>';
@@ -931,13 +1051,16 @@ function renderWeek() {
 
   const list = document.getElementById('weekList');
   list.innerHTML = '';
-  let wFee=0, wDep=0, wTip=0, wComm=0, wTake=0, wCount=0, wDays=0, wC40=0;
+  let wFee=0, wDep=0, wTip=0, wComm=0, wTake=0, wCount=0, wDays=0, wC40=0, wPending=0;
+  let wFee30=0, wFee40=0;
   for (let i=0; i<7; i++) {
     const d = addDays(weekStart, i);
     const day = getDay(d);
     const s = calcDay(day);
     if (s.count > 0) wDays++;
     wFee += s.fee; wDep += s.deposit; wTip += s.tip; wComm += s.commission; wTake += s.takeHome; wCount += s.count; wC40 += s.c40;
+    wFee30 += s.fee30; wFee40 += s.fee40;
+    wPending += s.pending;
     const li = document.createElement('li');
     li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
     li.innerHTML = `
@@ -952,13 +1075,15 @@ function renderWeek() {
     list.appendChild(li);
   }
   document.getElementById('wDays').textContent = wDays;
-  document.getElementById('wCount').textContent = wCount;
-  document.getElementById('wFee').textContent = $$(wFee);
-  document.getElementById('wDep').textContent = $$(wDep);
+  document.getElementById('w30Fee').textContent = $$(wFee30);
+  document.getElementById('w40Fee').textContent = $$(wFee40);
   document.getElementById('wTip').textContent = $$(wTip);
   document.getElementById('wComm').textContent = $$(wComm);
-  document.getElementById('wCount40').textContent = wC40;
   document.getElementById('wTakeHome').textContent = $$(wTake);
+  // Pending shows cumulative through the end of the displayed week
+  const { total: cumPendingW } = getCumulativePending(weekEnd);
+  document.getElementById('wPending').textContent = $$(cumPendingW);
+  document.getElementById('wPendingRow').style.display = cumPendingW > 0 ? '' : 'none';
 }
 document.getElementById('weekPrev').addEventListener('click', () => { currentWeekStart = addDays(currentWeekStart, -7); renderWeek(); });
 document.getElementById('weekNext').addEventListener('click', () => { currentWeekStart = addDays(currentWeekStart, 7); renderWeek(); });
@@ -973,7 +1098,8 @@ function renderMonth() {
   const lastDay = new Date(y, m, 0).getDate();
   const list = document.getElementById('monthList');
   list.innerHTML = '';
-  let mFee=0, mDep=0, mTip=0, mComm=0, mTake=0, mCount=0, mDays=0, mC40=0;
+  let mFee=0, mDep=0, mTip=0, mComm=0, mTake=0, mCount=0, mDays=0, mC40=0, mPending=0;
+  let mFee30=0, mFee40=0;
   for (let i=1; i<=lastDay; i++) {
     const d = `${y}-${String(m).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
     const day = getDay(d);
@@ -981,6 +1107,8 @@ function renderMonth() {
     if (s.count > 0) {
       mDays++;
       mFee += s.fee; mDep += s.deposit; mTip += s.tip; mComm += s.commission; mTake += s.takeHome; mCount += s.count; mC40 += s.c40;
+      mFee30 += s.fee30; mFee40 += s.fee40;
+      mPending += s.pending;
       const li = document.createElement('li');
       li.className = 'day-item clickable' + (d===todayStr() ? ' today' : '');
       li.innerHTML = `
@@ -997,13 +1125,17 @@ function renderMonth() {
   }
   if (mDays === 0) list.innerHTML = '<div class="empty">No entries this month yet.</div>';
   document.getElementById('mDays').textContent = mDays;
-  document.getElementById('mCount').textContent = mCount;
-  document.getElementById('mFee').textContent = $$(mFee);
-  document.getElementById('mDep').textContent = $$(mDep);
+  document.getElementById('m30Fee').textContent = $$(mFee30);
+  document.getElementById('m40Fee').textContent = $$(mFee40);
   document.getElementById('mTip').textContent = $$(mTip);
   document.getElementById('mComm').textContent = $$(mComm);
-  document.getElementById('mCount40').textContent = mC40;
   document.getElementById('mTakeHome').textContent = $$(mTake);
+  const [my, mm] = currentMonth.split('-').map(Number);
+  const monthLastDay = new Date(my, mm, 0).getDate();
+  const monthEnd = `${my}-${String(mm).padStart(2,'0')}-${String(monthLastDay).padStart(2,'0')}`;
+  const { total: cumPendingM } = getCumulativePending(monthEnd);
+  document.getElementById('mPending').textContent = $$(cumPendingM);
+  document.getElementById('mPendingRow').style.display = cumPendingM > 0 ? '' : 'none';
 }
 function shiftMonth(delta) {
   const [y, m] = currentMonth.split('-').map(Number);
@@ -1075,6 +1207,109 @@ document.getElementById('wipeAll').addEventListener('click', () => {
 // Tap outside the modal closes it
 settingsModal.addEventListener('click', (e) => {
   if (e.target === settingsModal) settingsModal.classList.remove('show');
+});
+
+// ============================================================
+// Mark Paid (commission payout)
+// ============================================================
+const confirmModal = document.getElementById('confirmModal');
+const confirmDetail = document.getElementById('confirmDetail');
+let pendingConfirmAction = null;
+
+function showConfirm(detailText, onConfirm) {
+  confirmDetail.textContent = detailText;
+  pendingConfirmAction = onConfirm;
+  confirmModal.classList.add('show');
+}
+document.getElementById('confirmCancel').addEventListener('click', () => {
+  confirmModal.classList.remove('show');
+  pendingConfirmAction = null;
+});
+document.getElementById('confirmYes').addEventListener('click', () => {
+  confirmModal.classList.remove('show');
+  if (pendingConfirmAction) pendingConfirmAction();
+  pendingConfirmAction = null;
+});
+confirmModal.addEventListener('click', (e) => {
+  if (e.target === confirmModal) { confirmModal.classList.remove('show'); pendingConfirmAction = null; }
+});
+
+// Cumulative pending: all unpaid commission through the given as-of date (inclusive).
+// Optionally supply an in-progress day override so the running total reflects unsaved edits.
+function getCumulativePending(asOfDateStr, overrideForDate, overrideDay) {
+  const data = loadAll();
+  let total = 0;
+  let dayCount = 0;
+  for (const [dateStr, dayData] of Object.entries(data.days)) {
+    if (dateStr > asOfDateStr) continue;                       // skip days after the as-of date
+    if (overrideForDate && dateStr === overrideForDate) continue; // handled via override
+    if (dayData.paidDate) continue;
+    const s = calcDay({ rows: dayData.rows, paidDate: null });
+    if (s.commission > 0) { total += s.commission; dayCount++; }
+  }
+  // Apply in-progress override (for Daily view while editing)
+  if (overrideForDate && overrideForDate <= asOfDateStr && overrideDay && !overrideDay.paidDate) {
+    const s = calcDay({ rows: overrideDay.rows, paidDate: null });
+    if (s.commission > 0) { total += s.commission; dayCount++; }
+  }
+  return { total, dayCount };
+}
+
+function markPendingPaidThrough(asOfDateStr) {
+  const today = todayStr();
+  const data = loadAll();
+  const datesToMark = [];
+  for (const [dateStr, dayData] of Object.entries(data.days)) {
+    if (dateStr > asOfDateStr) continue;
+    if (dayData.paidDate) continue;
+    const s = calcDay({ rows: dayData.rows, paidDate: null });
+    if (s.commission > 0) datesToMark.push(dateStr);
+  }
+  for (const date of datesToMark) {
+    setDayPaidDate(date, today);
+  }
+}
+
+// Shared Paid-button handler (used on Daily/Weekly/Monthly).
+// asOfDateStr = the latest date covered by the current view.
+function triggerPaidConfirm(asOfDateStr, onAfter) {
+  // Make sure any in-progress edits are saved first
+  if (currentView === 'daily' && rowsCard.style.display !== 'none') {
+    setDay(currentDate, readRowsFromDOM());
+  }
+  const { total, dayCount } = getCumulativePending(asOfDateStr);
+  if (total <= 0) { alert('No pending commission to mark paid.'); return; }
+  showConfirm(`$${Math.floor(total).toLocaleString()} across ${dayCount} day(s) through ${fmtDate(asOfDateStr)} will be marked as paid today.`, () => {
+    markPendingPaidThrough(asOfDateStr);
+    onAfter();
+  });
+}
+
+// Daily — Paid button (marks all unpaid days through the viewed date)
+document.getElementById('markPaidBtn').addEventListener('click', () => {
+  triggerPaidConfirm(currentDate, () => renderDay());
+});
+
+// Daily — Undo (only undoes the currently-viewed day's paid status)
+document.getElementById('undoPaidBtn').addEventListener('click', () => {
+  showConfirm(`Undo the "paid" status for ${fmtDate(currentDate)}? Commission will go back to pending.`, () => {
+    setDayPaidDate(currentDate, null);
+    renderDay();
+  });
+});
+
+// Weekly — Paid button (marks all unpaid days through end of the week)
+document.getElementById('wMarkPaidBtn').addEventListener('click', () => {
+  const weekEnd = addDays(currentWeekStart, 6);
+  triggerPaidConfirm(weekEnd, () => renderWeek());
+});
+
+// Monthly — Paid button (marks all unpaid days through end of the month)
+document.getElementById('mMarkPaidBtn').addEventListener('click', () => {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const monthEnd = `${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+  triggerPaidConfirm(monthEnd, () => renderMonth());
 });
 
 // ============================================================
